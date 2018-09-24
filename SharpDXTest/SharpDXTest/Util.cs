@@ -317,13 +317,20 @@ CamPos += Offset_Z * (*CamZAxis);
         yield return new Vector3(csv[2].Float(), csv[3].Float(), csv[4].Float());
       }
     }
-    public static IEnumerable< int[]> ParseFaceCSV( IEnumerable<string> lines)
+
+    public static int[] ParseFaceCSV(string line)
+    {
+
+      var csv = line.Split(',');
+      return new int[] { csv[3].Int(), csv[4].Int(), csv[5].Int() };
+    }
+
+    public static IEnumerable< int[]> ParseFaceCSVAll( IEnumerable<string> lines)
     {
       //Face,"箱",1,2,3,0
       foreach (var item in lines)
       {
-        var csv = item.Split(',');
-        yield return new int[] { csv[3].Int() , csv[4].Int() , csv[5].Int() };
+        yield return ParseFaceCSV(item);
       }
     }
 

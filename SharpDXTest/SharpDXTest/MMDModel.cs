@@ -8,23 +8,93 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Vert = SharpHelper.TexturedVertex;
 
 namespace SharpDXTest
 {
+  public class Material
+  {
+    //;Material,材質名,材質名(英),拡散色_R,拡散色_G,拡散色_B,拡散色_A(非透過度),反射色_R,反射色_G,反射色_B,反射強度,環境色_R,環境色_G,環境色_B,両面描画(0/1),地面影(0/1),セルフ影マップ(0/1),セルフ影(0/1),頂点色(0/1),描画(0:Tri/1:Point/2:Line),エッジ(0/1),エッジサイズ,エッジ色_R,エッジ色_G,エッジ色_B,エッジ色_A,テクスチャパス,スフィアテクスチャパス,スフィアモード(0:無効/1:乗算/2:加算/3:サブテクスチャ),Toonテクスチャパス,メモ
+    //Material,"スカート腕ヘドフォン","en",1,1,1,1,0,0,0,50,0.4,0.4,0.4,1,1,1,1,0,0,1,0.6,0.3,0.2,0.4,0.6,"k_huku1.png","body00_s.bmp",2,"toon_defo.bmp",""
+    //;Face,親材質名,面Index,頂点Index1,頂点Index2,頂点Index3
+    //Face,"スカート腕ヘドフォン",0,858,840,855
+    public string Name;
+    public string TexName;
+    public IEnumerable<Vert> Vertice;
+    public IEnumerable<int[]> Faces;
+    public int[] FlattenFace;
+    public Material(string line)
+    {
+      var csv = line.Split(',');
+      Name = csv[1];
+      TexName = csv[26];
+    }
+
+    private IEnumerable<Vert> GetVertex(Vert[] vert)
+    {
+      foreach (var i in Faces)
+      {
+        yield return vert[i[0]];
+        yield return vert[i[1]];
+        yield return vert[i[2]];
+      }
+    }
+
+    public static IEnumerable<Material> MakeFromCSV(IEnumerable<string> lines,Dictionary<string,List<string>> dictionary,Vert[] verts)
+    {
+      foreach (var item in lines)
+      {
+        var mat = new Material(item);
+        var facecsv = dictionary[mat.Name];
+        mat.Faces = Util.ParseFaceCSVAll(facecsv);
+        mat.Vertice = mat.GetVertex(verts);
+        mat.FlattenFace = mat.Faces.SelectMany(x => x).ToArray();
+        yield return mat;
+      }
+    }
+  }
   public class MMDModel
   {
-    public TexturedVertex[] Vertice;
+    public Vert[] Vertice;
     public int[] Index;
     public Face[] Faces;
-
+    public IEnumerable<Material> Materials;
     SphereCast cast;
+
+    SharpMesh GetSharpMesh(SharpDevice device)
+    {
+      var mesh = new SharpMesh(device);
+      var vertices = new List<Vert>();
+      List<int> indices = new List<int>();
+
+      int icount = 0;
+      foreach (var item in Materials)
+      {
+        vertices.AddRange(item.Vertice);
+        indices.AddRange(item.FlattenFace);
+        int faceCount = item.FlattenFace.Count();
+        mesh.SubSets.Add(new SharpSubSet()
+        {
+          IndexCount = faceCount,
+          StartIndex = icount,
+          DiffuseMap = device.LoadTextureFromFile(item.TexName)
+        });
+        icount += faceCount;
+      }
+      mesh.SetOnly(vertices.ToArray(), indices.ToArray());
+      return mesh;
+    }
 
     public MMDModel(string path)
     {
       var lines = File.ReadAllLines(path);
-      Vertice = ParseCSV(lines.Where(l => l.Contains("Vertex") && !l.Contains(";") && !l.Contains("Morph"))).ToArray();
-      Index = Util.ParseFaceCSV(lines.Where(l => l.Contains("Face") && !l.Contains(";"))).SelectMany(x => x).ToArray();
+      var gr = lines.GroupBy(l => l.Split(',')[0]);
+      var gs = gr.Where(g => !g.Key.Contains(";")).ToDictionary(s=>s.Key,g=>g.ToList());
 
+      Vertice = ParseCSV(gs["Vertex"]).ToArray();
+      var faceGr = gs["Face"].GroupBy(s => s.Split(',')[1]).ToDictionary(s=>s.Key,g=>g.ToList());
+      Materials = Material.MakeFromCSV(gs["Material"], faceGr , Vertice );
+      Index = Util.ParseFaceCSVAll(gs["Face"]).SelectMany(x => x).ToArray();
       Faces = new Face[Index.Length / 3];
       for (int i = 0; i < Index.Length; i += 3)
       {
@@ -33,6 +103,7 @@ namespace SharpDXTest
       //ModelStr = Faces.Select(f => f.TriString).ConcatStr();
       cast = new SphereCast(Matrix.Zero);
     }
+
     Buffer Buffer;
     SharpShader Shader;
     ShaderResourceView Texture;
@@ -86,10 +157,7 @@ namespace SharpDXTest
         yield return new TexturedVertex(new Vector3(csv[2].Float(), csv[3].Float(), csv[4].Float()), new Vector2(csv[9].Float(), csv[10].Float()));
       }
     }
-    //;Material,材質名,材質名(英),拡散色_R,拡散色_G,拡散色_B,拡散色_A(非透過度),反射色_R,反射色_G,反射色_B,反射強度,環境色_R,環境色_G,環境色_B,両面描画(0/1),地面影(0/1),セルフ影マップ(0/1),セルフ影(0/1),頂点色(0/1),描画(0:Tri/1:Point/2:Line),エッジ(0/1),エッジサイズ,エッジ色_R,エッジ色_G,エッジ色_B,エッジ色_A,テクスチャパス,スフィアテクスチャパス,スフィアモード(0:無効/1:乗算/2:加算/3:サブテクスチャ),Toonテクスチャパス,メモ
-    //Material,"スカート腕ヘドフォン","en",1,1,1,1,0,0,0,50,0.4,0.4,0.4,1,1,1,1,0,0,1,0.6,0.3,0.2,0.4,0.6,"k_huku1.png","body00_s.bmp",2,"toon_defo.bmp",""
-    //;Face,親材質名,面Index,頂点Index1,頂点Index2,頂点Index3
-    //Face,"スカート腕ヘドフォン",0,858,840,855
+
     public void ToSphere(Vector3 pos)
     {
       cast.Offset = pos;
