@@ -1,4 +1,8 @@
-﻿using System;
+﻿//#define CUBE
+//#define CUBEMAP
+#define FONT
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -76,7 +80,7 @@ namespace Tutorial16
       {
         //load model from wavefront obj file
         SharpMesh teapot = SharpMesh.CreateFromObj(device, "../../teapot.obj");
-
+#if CUBEMAP
         //init shader
         SharpShader cubeMapPass = new SharpShader(device, "../../HLSL.txt",
             new SharpShaderDescription() { VertexShaderFunction = "VS", GeometryShaderFunction = "GS", PixelShaderFunction = "PS" },
@@ -85,7 +89,7 @@ namespace Tutorial16
                         new InputElement("NORMAL", 0, Format.R32G32B32_Float, 12, 0),
                         new InputElement("TEXCOORD", 0, Format.R32G32_Float, 24, 0)
             });
-
+#endif
         //second pass
         SharpShader standard = new SharpShader(device, "../../HLSL.txt",
             new SharpShaderDescription() { VertexShaderFunction = "VS_SECOND", PixelShaderFunction = "PS_SECOND" },
@@ -94,7 +98,7 @@ namespace Tutorial16
                         new InputElement("NORMAL", 0, Format.R32G32B32_Float, 12, 0),
                         new InputElement("TEXCOORD", 0, Format.R32G32_Float, 24, 0)
             });
-
+#if CUBE
 
         //second pass
         SharpShader reflection = new SharpShader(device, "../../HLSL.txt",
@@ -105,12 +109,17 @@ namespace Tutorial16
                         new InputElement("TEXCOORD", 0, Format.R32G32_Float, 24, 0)
             });
 
+#endif
+        // おそらく render target 作るか　tut4シェーダを入れ替えれば描画できるようになる
+#if CUBEMAP
         //render target
         SharpCubeTarget cubeTarget = new SharpCubeTarget(device, 512, Format.R8G8B8A8_UNorm);
 
         //init constant buffer
         Buffer11 dataConstantBuffer = cubeMapPass.CreateBuffer<Data>();
+#else
 
+#endif
         //init frame counter
         fpsCounter.Reset();
 
@@ -160,7 +169,7 @@ namespace Tutorial16
           //light direction
           Vector3 lightDirection = new Vector3(0.5f, 0, -1);
           lightDirection.Normalize();
-
+#if CUBEMAP
           //six axis 
           Matrix view1 = Matrix.LookAtLH(new Vector3(), new Vector3(1, 0, 0), Vector3.UnitY);
           Matrix view2 = Matrix.LookAtLH(new Vector3(), new Vector3(-1, 0, 0), Vector3.UnitY);
@@ -201,20 +210,21 @@ namespace Tutorial16
           device.DeviceContext.VertexShader.SetConstantBuffer(0, dataConstantBuffer);
           device.DeviceContext.GeometryShader.SetConstantBuffer(0, dataConstantBuffer);
           device.DeviceContext.PixelShader.SetConstantBuffer(0, dataConstantBuffer);
-
           //draw mesh
           teapot.Begin();
           for (int i = 0; i < teapot.SubSets.Count; i++)
           {
             device.DeviceContext.PixelShader.SetShaderResource(0, teapot.SubSets[i].DiffuseMap);
+            // 映り込み
             teapot.Draw(i);
             //teapot.VertexBuffer.
           }
+          Projection.Invert();
 
-#region
+#endif
+#region mmdModel
 
           teapot.Set(model.Vertice, model.Index);
-          Projection.Invert();
 #endregion
 
           //RENDERING TO DEVICE
@@ -223,10 +233,10 @@ namespace Tutorial16
           device.SetDefaultTargers();
 
           //clear color
-          device.Clear(Color.Blue);
-
+          device.Clear(Color.Brown);
           //apply shader
           standard.Apply();
+#if CUBE
 
 
           //set target
@@ -255,6 +265,7 @@ namespace Tutorial16
           for (int i = 0; i < teapot.SubSets.Count; i++)
           {
             device.DeviceContext.PixelShader.SetShaderResource(0, teapot.SubSets[i].DiffuseMap);
+            // 周りの黒いモデル
             teapot.Draw(i);
           }
 
@@ -280,14 +291,18 @@ namespace Tutorial16
           //write data inside constant buffer
           device.UpdateData<Data>(dataConstantBuffer, sceneInformation);
 
+#else
+#endif
           //draw mesh
           teapot.Begin();
           for (int i = 0; i < teapot.SubSets.Count; i++)
           {
             device.DeviceContext.PixelShader.SetShaderResource(0, teapot.SubSets[i].DiffuseMap);
+            // 中央のモデル
             teapot.Draw(i);
           }
 
+#if FONT
           //begin drawing text
           device.Font.Begin();
 
@@ -322,6 +337,7 @@ namespace Tutorial16
           }
           //flush text to view
           device.Font.End();
+#endif
           //present
           device.Present();
 
@@ -330,13 +346,17 @@ namespace Tutorial16
 
         //release resource
         teapot.Dispose();
+#if CUBEMAP
         dataConstantBuffer.Dispose();
 
         cubeMapPass.Dispose();
+#endif
         standard.Dispose();
+#if CUBE
         reflection.Dispose();
 
         cubeTarget.Dispose();
+#endif
 
 
       }
