@@ -95,6 +95,7 @@
     <Compile Include="Skinning\Node.cs" />
     <Compile Include="Skinning\SkinData.cs" />
     <Compile Include="TextureUtilities.cs" />
+    <Compile Include="TgaReader.cs" />
     <Compile Include="Utilities.cs" />
     <Compile Include="Vertices.cs" />
     <Compile Include="WaveFrontImporter.cs" />

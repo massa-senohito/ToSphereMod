@@ -28,6 +28,7 @@ namespace SharpDXTest
       var csv = line.Split(',');
       Name = csv[1];
       TexName = csv[26];
+      TexName = TexName.Replace("\"", "");
     }
 
     private IEnumerable<Vert> GetVertex(Vert[] vert)
@@ -52,8 +53,12 @@ namespace SharpDXTest
         yield return mat;
       }
     }
+    public override string ToString()
+    {
+      return Name + " : " + TexName;
+    }
   }
-  public class MMDModel
+  public class MMDModel : System.IDisposable
   {
     public Vert[] Vertice;
     public int[] Index;
@@ -64,13 +69,11 @@ namespace SharpDXTest
     SharpMesh GetSharpMesh(SharpDevice device)
     {
       var mesh = new SharpMesh(device);
-      var vertices = new List<Vert>();
       List<int> indices = new List<int>();
 
       int icount = 0;
       foreach (var item in Materials)
       {
-        vertices.AddRange(item.Vertice);
         indices.AddRange(item.FlattenFace);
         int faceCount = item.FlattenFace.Count();
         mesh.SubSets.Add(new SharpSubSet()
@@ -81,7 +84,13 @@ namespace SharpDXTest
         });
         icount += faceCount;
       }
-      mesh.SetOnly(vertices.ToArray(), indices.ToArray());
+      Index = indices.ToArray();
+      Faces = new Face[Index.Length / 3];
+      for (int i = 0; i < Index.Length; i += 3)
+      {
+        Faces[i / 3] = new Face(Vertice[Index[i]].Position, Vertice[Index[i + 1]].Position, Vertice[Index[i + 2]].Position);
+      }
+      mesh.SetOnly(Vertice, Index);
       return mesh;
     }
 
@@ -94,27 +103,21 @@ namespace SharpDXTest
       Vertice = ParseCSV(gs["Vertex"]).ToArray();
       var faceGr = gs["Face"].GroupBy(s => s.Split(',')[1]).ToDictionary(s=>s.Key,g=>g.ToList());
       Materials = Material.MakeFromCSV(gs["Material"], faceGr , Vertice );
-      Index = Util.ParseFaceCSVAll(gs["Face"]).SelectMany(x => x).ToArray();
-      Faces = new Face[Index.Length / 3];
-      for (int i = 0; i < Index.Length; i += 3)
-      {
-        Faces[i / 3] = new Face(Vertice[Index[i]].Position, Vertice[Index[i + 1]].Position, Vertice[Index[i + 2]].Position);
-      }
+      // 毎フレーム送るにはおもすぎる
       //ModelStr = Faces.Select(f => f.TriString).ConcatStr();
       cast = new SphereCast(Matrix.Zero);
     }
 
+    SharpMesh Mesh;
     Buffer Buffer;
     SharpShader Shader;
-    ShaderResourceView Texture;
     VertexShaderStage VertexShader;
     PixelShaderStage PixelShader;
 
     public void LoadTexture(SharpDevice device)
     {
 
-
-      SharpMesh mesh = SharpMesh.Create(device, Vertice, Index);
+      Mesh = GetSharpMesh(device);
 
       //init shader
       Shader = new SharpShader(device, "../../HLSLModel.txt",
@@ -124,7 +127,6 @@ namespace SharpDXTest
                         new InputElement("TEXCOORD", 0, Format.R32G32_Float, 12, 0)
           });
       Buffer = Shader.CreateBuffer<Matrix>();
-      Texture = device.LoadTextureFromFile("../../texture.dds");
       VertexShader = device.DeviceContext.VertexShader;
       PixelShader = device.DeviceContext.PixelShader;
 
@@ -137,9 +139,15 @@ namespace SharpDXTest
       //apply constant buffer to shader
       VertexShader.SetConstantBuffer(0, Buffer);
 
-      //set texture
-      PixelShader.SetShaderResource(0, Texture);
       device.UpdateData<Matrix>(Buffer, worldViewProjection);
+      Mesh.Begin();
+      for (int i = 0; i < Mesh.SubSets.Count; i++)
+      {
+        device.DeviceContext.PixelShader.SetShaderResource(0, Mesh.SubSets[i].DiffuseMap);
+        //set texture
+        Mesh.Draw(i);
+      }
+
     }
     public string ModelStr
     {
@@ -154,7 +162,7 @@ namespace SharpDXTest
       foreach (var item in lines)
       {
         var csv = item.Split(',');
-        yield return new TexturedVertex(new Vector3(csv[2].Float(), csv[3].Float(), csv[4].Float()), new Vector2(csv[9].Float(), csv[10].Float()));
+        yield return new Vert(new Vector3(csv[2].Float(), csv[3].Float(), csv[4].Float()), new Vector2(csv[9].Float(), csv[10].Float()));
       }
     }
 
@@ -167,6 +175,7 @@ namespace SharpDXTest
       {
         Vertice[i].Position = vd[i];
       }
+      Mesh.SetOnly(Vertice, Index.ToArray());
     }
 
     public IEnumerable<Vector3> HitPos(RayWrap ray)
@@ -180,6 +189,45 @@ namespace SharpDXTest
         }
       }
     }
+
+    #region IDisposable Support
+    private bool disposedValue = false; // 重複する呼び出しを検出するには
+
+    protected virtual void Dispose(bool disposing)
+    {
+      if (!disposedValue)
+      {
+        if (disposing)
+        {
+          Mesh.Dispose();
+          VertexShader.Dispose();
+          PixelShader.Dispose();
+          Buffer.Dispose();
+          Shader.Dispose();
+        }
+
+        // TODO: アンマネージ リソース (アンマネージ オブジェクト) を解放し、下のファイナライザーをオーバーライドします。
+        // TODO: 大きなフィールドを null に設定します。
+
+        disposedValue = true;
+      }
+    }
+
+    // TODO: 上の Dispose(bool disposing) にアンマネージ リソースを解放するコードが含まれる場合にのみ、ファイナライザーをオーバーライドします。
+    // ~MMDModel() {
+    //   // このコードを変更しないでください。クリーンアップ コードを上の Dispose(bool disposing) に記述します。
+    //   Dispose(false);
+    // }
+
+    // このコードは、破棄可能なパターンを正しく実装できるように追加されました。
+    public void Dispose()
+    {
+      // このコードを変更しないでください。クリーンアップ コードを上の Dispose(bool disposing) に記述します。
+      Dispose(true);
+      // TODO: 上のファイナライザーがオーバーライドされる場合は、次の行のコメントを解除してください。
+      // GC.SuppressFinalize(this);
+    }
+    #endregion
   }
 
 }

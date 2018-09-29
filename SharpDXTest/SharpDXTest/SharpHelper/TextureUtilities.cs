@@ -9,7 +9,8 @@ using SharpDX.DXGI;
 
 namespace SharpHelper
 {
-    using SharpDX;
+  using DmitryBrant.ImageFormats;
+  using SharpDX;
     using SharpDX.Direct3D11;
 
     /// <summary>
@@ -818,10 +819,8 @@ namespace SharpHelper
             return InitTextureFromData(device, context, header, null, data, offset, 0, out isCubeMap);
         }
         
-        private static ShaderResourceView CreateTextureFromBitmap(Device device, DeviceContext context, string filename)
-        {
-            System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap(filename);
-
+        private static ShaderResourceView CreateTextureFromBitmap(Device device, DeviceContext context, System.Drawing.Bitmap bitmap)
+    {
             int width = bitmap.Width;
             int height = bitmap.Height;
 
@@ -848,6 +847,12 @@ namespace SharpHelper
             buffer.Dispose();
 
             return resourceView;
+    }
+        private static ShaderResourceView CreateTextureFromBitmap(Device device, DeviceContext context, string filename)
+        {
+            System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap(filename);
+      return CreateTextureFromBitmap(device, context, bitmap);
+
         }
 
         /// <summary>
@@ -865,7 +870,10 @@ namespace SharpHelper
                 bool isCube;
                 return CreateTextureFromDDS(device.Device, device.DeviceContext, System.IO.File.ReadAllBytes(filename), out isCube);
             }
-            else
+            if(ext.ToLower() == ".tga")
+      {
+        return CreateTextureFromBitmap(device.Device, device.DeviceContext, TgaReader.Load(filename));
+      }
             {
                 return CreateTextureFromBitmap(device.Device, device.DeviceContext, filename);
             }

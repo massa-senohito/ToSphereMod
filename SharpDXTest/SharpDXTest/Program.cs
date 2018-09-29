@@ -40,7 +40,8 @@ namespace Tutorial16
     static Vector2 clicked = Vector2.Zero;
     static RayWrap CameraRay;
     public static VDBDebugger debug;
-    static TrackBallCamera camera = new TrackBallCamera(new Vector3(0,10,30) , new Vector3(0,10,0));
+    static TrackBallCamera camera = new TrackBallCamera(new Vector3(0,10,10) , new Vector3(0,10,0));
+    //static TrackBallCamera camera = new TrackBallCamera(new Vector3(0,5,5) , new Vector3(0,0,0));
     static Matrix Projection;
     static Matrix View;
     static Mouse mouse =new Mouse();
@@ -79,29 +80,31 @@ namespace Tutorial16
       using (SharpDevice device = new SharpDevice(Form))
       {
         //load model from wavefront obj file
-        SharpMesh teapot = SharpMesh.CreateFromObj(device, "../../teapot.obj");
 #if CUBEMAP
+        SharpMesh teapot = SharpMesh.CreateFromObj(device, "../../teapot.obj");
         //init shader
-        SharpShader cubeMapPass = new SharpShader(device, "../../HLSL.txt",
+        SharpShader cubeMapPass = new SharpShader(device, "../../HLSLEnv.txt",
             new SharpShaderDescription() { VertexShaderFunction = "VS", GeometryShaderFunction = "GS", PixelShaderFunction = "PS" },
             new InputElement[] {
                         new InputElement("POSITION", 0, Format.R32G32B32_Float, 0, 0),
                         new InputElement("NORMAL", 0, Format.R32G32B32_Float, 12, 0),
                         new InputElement("TEXCOORD", 0, Format.R32G32_Float, 24, 0)
             });
-#endif
         //second pass
-        SharpShader standard = new SharpShader(device, "../../HLSL.txt",
+        SharpShader standard = new SharpShader(device, "../../HLSLEnv.txt",
             new SharpShaderDescription() { VertexShaderFunction = "VS_SECOND", PixelShaderFunction = "PS_SECOND" },
             new InputElement[] {
                         new InputElement("POSITION", 0, Format.R32G32B32_Float, 0, 0),
                         new InputElement("NORMAL", 0, Format.R32G32B32_Float, 12, 0),
                         new InputElement("TEXCOORD", 0, Format.R32G32_Float, 24, 0)
             });
+#else
+#endif
+        model.LoadTexture(device);
 #if CUBE
 
         //second pass
-        SharpShader reflection = new SharpShader(device, "../../HLSL.txt",
+        SharpShader reflection = new SharpShader(device, "../../HLSLEnv.txt",
             new SharpShaderDescription() { VertexShaderFunction = "VS_SECOND", PixelShaderFunction = "PS_REFLECTION" },
             new InputElement[] {
                         new InputElement("POSITION", 0, Format.R32G32B32_Float, 0, 0),
@@ -122,6 +125,7 @@ namespace Tutorial16
 #endif
         //init frame counter
         fpsCounter.Reset();
+        device.SetBlend(BlendOperation.Add, BlendOption.SourceAlpha, BlendOption.InverseSourceAlpha);
 
 
         //main loop
@@ -220,12 +224,12 @@ namespace Tutorial16
             //teapot.VertexBuffer.
           }
           Projection.Invert();
-
-#endif
 #region mmdModel
 
           teapot.Set(model.Vertice, model.Index);
 #endregion
+#endif
+
 
           //RENDERING TO DEVICE
 
@@ -234,8 +238,12 @@ namespace Tutorial16
 
           //clear color
           device.Clear(Color.Brown);
-          //apply shader
+#if CUBEMAP
           standard.Apply();
+#else
+          //apply shader
+          model.Update(device, View * Projection);
+#endif
 #if CUBE
 
 
@@ -290,9 +298,6 @@ namespace Tutorial16
           };
           //write data inside constant buffer
           device.UpdateData<Data>(dataConstantBuffer, sceneInformation);
-
-#else
-#endif
           //draw mesh
           teapot.Begin();
           for (int i = 0; i < teapot.SubSets.Count; i++)
@@ -301,6 +306,9 @@ namespace Tutorial16
             // 中央のモデル
             teapot.Draw(i);
           }
+#else
+#endif
+
 
 #if FONT
           //begin drawing text
@@ -345,13 +353,15 @@ namespace Tutorial16
 
 
         //release resource
-        teapot.Dispose();
 #if CUBEMAP
+        teapot.Dispose();
         dataConstantBuffer.Dispose();
 
         cubeMapPass.Dispose();
-#endif
         standard.Dispose();
+#else
+#endif
+        model.Dispose();
 #if CUBE
         reflection.Dispose();
 
