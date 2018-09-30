@@ -77,12 +77,18 @@ namespace SharpDXTest
       {
         indices.AddRange(item.FlattenFace);
         int faceCount = item.FlattenFace.Count();
-        mesh.SubSets.Add(new SharpSubSet()
+
+        SharpSubSet subSet = new SharpSubSet()
         {
           IndexCount = faceCount,
           StartIndex = icount,
-          DiffuseMap = device.LoadTextureFromFile(item.TexName)
-        });
+        };
+      if(item.TexName != string.Empty)
+      {
+          subSet.DiffuseMap = device.LoadTextureFromFile(item.TexName);
+
+      }
+        mesh.SubSets.Add(subSet);
 
         for (var i = icount; i < icount+faceCount; i += 3)
         {

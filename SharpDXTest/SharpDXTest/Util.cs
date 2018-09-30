@@ -336,7 +336,13 @@ CamPos += Offset_Z * (*CamZAxis);
 
     public static string ConcatStr<T>(this IEnumerable<T> items)
     {
-      return items.Aggregate("", (acc, i) => acc + i );
+      StringBuilder builder = new StringBuilder();
+      //return items.Aggregate("", (acc, i) => acc + i );
+      foreach (var item in items)
+      {
+        builder.Append(item);
+      }
+      return builder.ToString();
     }
 
 

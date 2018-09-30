@@ -41,6 +41,8 @@ namespace Tutorial16
     static MMDModel axis ;
     static Vector2 clicked = Vector2.Zero;
     static RayWrap CameraRay;
+
+    static SharpFPS fpsCounter = new SharpFPS();
     public static VDBDebugger debug;
     static TrackBallCamera camera = new TrackBallCamera(new Vector3(0,10,10) , new Vector3(0,10,0));
     //static TrackBallCamera camera = new TrackBallCamera(new Vector3(0,5,5) , new Vector3(0,0,0));
@@ -48,6 +50,60 @@ namespace Tutorial16
     static Matrix View;
     static Mouse mouse =new Mouse();
     static RenderForm Form;
+    static void PostViewUpdate(SharpDevice device)
+    {
+#if FONT
+          //begin drawing text
+          device.Font.Begin();
+
+          //draw string
+          fpsCounter.Update();
+          device.Font.DrawString("FPS: " + fpsCounter.FPS, 0, 0);
+          var startRay = CordUtil.ScreenToWorld(clicked, 0, new Vector2(Form.Size.Width, Form.Size.Height), View, Projection);
+          var endRay = CordUtil.ScreenToWorld(clicked, 1, new Vector2(Form.Size.Width, Form.Size.Height), View, Projection);
+
+          
+
+          device.Font.DrawString("mouse: " + startRay, 0, 30);
+          device.Font.DrawString("mouseto: " + endRay, 0, 60);
+          var viewport = new ViewportF(0, 0, Form.Size.Width, Form.Size.Height);
+          CameraRay = //new RayWrap(startRay, endRay);
+            new RayWrap(Ray.GetPickRay((int)clicked.X, (int)clicked.Y, viewport, View * Projection));
+          debug.vdb_label("model");
+          debug.Send(axis.ModelStr);
+          debug.vdb_label("ray");
+          debug.Send(CameraRay.RayStr);
+#if MODELCLK
+          var hits = model.HitPos(CameraRay).ToArray();
+          for (int j = 0; j < hits.Count(); j++)
+          {
+            debug.vdb_label("hit");
+            debug.Send(hits[j].HitPosition.DebugStr());
+            device.Font.DrawString("hit: " + hits[j].Info, 0, 90 + 30 * j);
+            if (j == 0)
+            {
+              model.ToSphere(hits[0].HitPosition);
+            }
+          }
+#else
+
+          var hits = axis.HitPos(CameraRay).ToArray();
+          for (int j = 0; j < hits.Count(); j++)
+          {
+            debug.vdb_label("hit");
+            debug.Send(hits[j].HitPosition.DebugStr());
+            device.Font.DrawString("hit: " + hits[j].Info, 0, 90 + 30 * j);
+          }
+#endif
+
+          //flush text to view
+          device.Font.End();
+#endif
+    }
+    static void PreViewUpdate(SharpDevice device)
+    {
+
+    }
     /// <summary>
     /// The main entry point for the application.
     /// </summary>
@@ -71,13 +127,11 @@ namespace Tutorial16
       Form = new RenderForm();
       Form.Text = "Tutorial 16: Environment Mapping";
       //frame rate counter
-      SharpFPS fpsCounter = new SharpFPS();
 #region 
       Form.MouseClick += Form_MouseClick;
       Form.MouseMove += Form_MouseMove;
-      axis = new MMDModel("axis/axis.csv");
+      axis = new MMDModel("axis/axisHead.csv");
       debug = new VDBDebugger();
-      ViewportF viewport;
 #endregion
       using (SharpDevice device = new SharpDevice(Form))
       {
@@ -142,7 +196,7 @@ namespace Tutorial16
 
           //apply states
           device.UpdateAllStates();
-
+          PreViewUpdate(device);
 
           //MATRICES
 
@@ -163,7 +217,7 @@ namespace Tutorial16
           camera.Update(mouse,fpsCounter.Delta*0.001f);
           mouse.Update();
           //camera.Move(new Vector3(0.1f, 0, 0));
-          Vector3 from = View.TranslationVector;
+          Vector3 from = camera.Position;
           if (!float.IsNaN(from.X))
           {
             debug.vdb_label("campos");
@@ -312,55 +366,8 @@ namespace Tutorial16
           }
 #else
 #endif
+          PostViewUpdate(device);
 
-
-#if FONT
-          //begin drawing text
-          device.Font.Begin();
-
-          //draw string
-          fpsCounter.Update();
-          device.Font.DrawString("FPS: " + fpsCounter.FPS, 0, 0);
-          var startRay = CordUtil.ScreenToWorld(clicked, 0, new Vector2(Form.Size.Width, Form.Size.Height), View, Projection);
-          var endRay = CordUtil.ScreenToWorld(clicked, 1, new Vector2(Form.Size.Width, Form.Size.Height), View, Projection);
-
-          
-
-          device.Font.DrawString("mouse: " + startRay, 0, 30);
-          device.Font.DrawString("mouseto: " + endRay, 0, 60);
-          viewport = new ViewportF(0, 0, Form.Size.Width, Form.Size.Height);
-          CameraRay = //new RayWrap(startRay, endRay);
-            new RayWrap(Ray.GetPickRay((int)clicked.X, (int)clicked.Y, viewport, View * Projection));
-          debug.vdb_label("model");
-          debug.Send(axis.ModelStr);
-          debug.vdb_label("ray");
-          debug.Send(CameraRay.RayStr);
-#if MODELCLK
-          var hits = model.HitPos(CameraRay).ToArray();
-          for (int j = 0; j < hits.Count(); j++)
-          {
-            debug.vdb_label("hit");
-            debug.Send(hits[j].HitPosition.DebugStr());
-            device.Font.DrawString("hit: " + hits[j].Info, 0, 90 + 30 * j);
-            if (j == 0)
-            {
-              model.ToSphere(hits[0].HitPosition);
-            }
-          }
-#else
-
-          var hits = axis.HitPos(CameraRay).ToArray();
-          for (int j = 0; j < hits.Count(); j++)
-          {
-            debug.vdb_label("hit");
-            debug.Send(hits[j].HitPosition.DebugStr());
-            device.Font.DrawString("hit: " + hits[j].Info, 0, 90 + 30 * j);
-          }
-#endif
-
-          //flush text to view
-          device.Font.End();
-#endif
           //present
           device.Present();
 
