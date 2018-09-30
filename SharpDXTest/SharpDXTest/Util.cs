@@ -525,6 +525,7 @@ D3DXVECTOR3* CalcScreenToWorld(
       var invVP = VP.Inverted();
       var tmp = invVP * invProj * invView;
       Vector3 ret = new Vector3(screenPos, fz);
+
       //Matrix.Transformation()
       var tr = Matrix.Translation(ret);
       var t = (tr * tmp).TranslationVector;
@@ -541,16 +542,21 @@ D3DXVECTOR3* CalcScreenToWorld(
     {
       get;
     }
+    public string Info
+    {
+      get;
+    }
 
     public HitResult(bool isHit, Vector3 pos)
     {
       IsHit = isHit;
       HitPosition = pos;
     }
-    public HitResult( Vector3 pos)
+    public HitResult( Vector3 pos , string info)
     {
       IsHit = true;
       HitPosition = pos;
+      Info = info;
     }
     public static HitResult Null
     {
@@ -618,7 +624,7 @@ D3DXVECTOR3* CalcScreenToWorld(
       var isIn = dist < Length;
       if (intersects && true)
       {
-        return new HitResult(From + Dir * dist);
+        return new HitResult(From + Dir * dist,face.MatName);
       }
       return HitResult.Null;
 
@@ -655,6 +661,10 @@ D3DXVECTOR3* CalcScreenToWorld(
 
   public class Face
   {
+    public string MatName
+    {
+      get;
+    }
     public Vector3 P1
     {
       get;
@@ -681,7 +691,7 @@ D3DXVECTOR3* CalcScreenToWorld(
       get;
     }
     public Vector3 BaryCentric;
-    public Face(Vector3 p1,Vector3 p2 ,Vector3 p3)
+    public Face(Vector3 p1,Vector3 p2 ,Vector3 p3,string matName)
     {
       P1 = p1;
       P2 = p2;
@@ -695,6 +705,7 @@ D3DXVECTOR3* CalcScreenToWorld(
       AB = P2 - P1;
       BC = P3 - P2;
       CA = P1 - P3;
+      MatName = matName;
     }
     public string TriString
     {

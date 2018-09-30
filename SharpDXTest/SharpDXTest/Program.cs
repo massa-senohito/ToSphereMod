@@ -1,5 +1,6 @@
 ﻿//#define CUBE
 //#define CUBEMAP
+//#define MODELCLK
 #define FONT
 
 using System;
@@ -36,7 +37,8 @@ namespace Tutorial16
       public Matrix mat6;
     }
 
-    static MMDModel model;
+    static MMDModel model = new MMDModel(@"../../mikuCSV.csv");
+    static MMDModel axis ;
     static Vector2 clicked = Vector2.Zero;
     static RayWrap CameraRay;
     public static VDBDebugger debug;
@@ -73,7 +75,7 @@ namespace Tutorial16
 #region 
       Form.MouseClick += Form_MouseClick;
       Form.MouseMove += Form_MouseMove;
-      model = new MMDModel(@"../../mikuCSV.csv");
+      axis = new MMDModel("axis/axis.csv");
       debug = new VDBDebugger();
       ViewportF viewport;
 #endregion
@@ -101,6 +103,7 @@ namespace Tutorial16
 #else
 #endif
         model.LoadTexture(device);
+        axis.LoadTexture(device);
 #if CUBE
 
         //second pass
@@ -243,6 +246,7 @@ namespace Tutorial16
 #else
           //apply shader
           model.Update(device, View * Projection);
+          axis.Update(device, View * Projection);
 #endif
 #if CUBE
 
@@ -328,21 +332,32 @@ namespace Tutorial16
           CameraRay = //new RayWrap(startRay, endRay);
             new RayWrap(Ray.GetPickRay((int)clicked.X, (int)clicked.Y, viewport, View * Projection));
           debug.vdb_label("model");
-          debug.Send(model.ModelStr);
+          debug.Send(axis.ModelStr);
           debug.vdb_label("ray");
           debug.Send(CameraRay.RayStr);
-
+#if MODELCLK
           var hits = model.HitPos(CameraRay).ToArray();
           for (int j = 0; j < hits.Count(); j++)
           {
             debug.vdb_label("hit");
-            debug.Send(hits[j].DebugStr());
-            device.Font.DrawString("hit: " + hits[j], 0, 90 + 30 * j);
+            debug.Send(hits[j].HitPosition.DebugStr());
+            device.Font.DrawString("hit: " + hits[j].Info, 0, 90 + 30 * j);
             if (j == 0)
             {
-              model.ToSphere(hits[0]);
+              model.ToSphere(hits[0].HitPosition);
             }
           }
+#else
+
+          var hits = axis.HitPos(CameraRay).ToArray();
+          for (int j = 0; j < hits.Count(); j++)
+          {
+            debug.vdb_label("hit");
+            debug.Send(hits[j].HitPosition.DebugStr());
+            device.Font.DrawString("hit: " + hits[j].Info, 0, 90 + 30 * j);
+          }
+#endif
+
           //flush text to view
           device.Font.End();
 #endif
@@ -362,6 +377,7 @@ namespace Tutorial16
 #else
 #endif
         model.Dispose();
+        axis.Dispose();
 #if CUBE
         reflection.Dispose();
 

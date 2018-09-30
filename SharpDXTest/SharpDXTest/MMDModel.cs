@@ -4,6 +4,7 @@ using SharpDX.Direct3D11;
 using SharpDX.DXGI;
 using SharpHelper;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -70,7 +71,7 @@ namespace SharpDXTest
     {
       var mesh = new SharpMesh(device);
       List<int> indices = new List<int>();
-
+      List<Face> faces = new List<Face>();
       int icount = 0;
       foreach (var item in Materials)
       {
@@ -82,14 +83,27 @@ namespace SharpDXTest
           StartIndex = icount,
           DiffuseMap = device.LoadTextureFromFile(item.TexName)
         });
+
+        for (var i = icount; i < icount+faceCount; i += 3)
+        {
+          Face item1 = new Face(Vertice[indices[i]].Position, Vertice[indices[i + 1]].Position, Vertice[indices[i + 2]].Position, item.Name);
+          //Debug.WriteLine("first " + item1.TriString);
+          faces.Add(item1);
+
+        }
         icount += faceCount;
       }
       Index = indices.ToArray();
-      Faces = new Face[Index.Length / 3];
-      for (int i = 0; i < Index.Length; i += 3)
-      {
-        Faces[i / 3] = new Face(Vertice[Index[i]].Position, Vertice[Index[i + 1]].Position, Vertice[Index[i + 2]].Position);
-      }
+      Faces = faces.ToArray();
+      //Faces = new Face[Index.Length / 3];
+      //for (int i = 0; i < Index.Length; i += 3)
+      //{
+      //  Face face = new Face(Vertice[Index[i]].Position, Vertice[Index[i + 1]].Position, Vertice[Index[i + 2]].Position, "");
+      //    Debug.WriteLine("second " + face.TriString);
+      //  Faces[i / 3] = face;
+      //}
+      // 毎フレーム送るにはおもすぎる
+      ModelStr = Faces.Select(f => f.TriString).ConcatStr();
       mesh.SetOnly(Vertice, Index);
       return mesh;
     }
@@ -103,8 +117,7 @@ namespace SharpDXTest
       Vertice = ParseCSV(gs["Vertex"]).ToArray();
       var faceGr = gs["Face"].GroupBy(s => s.Split(',')[1]).ToDictionary(s=>s.Key,g=>g.ToList());
       Materials = Material.MakeFromCSV(gs["Material"], faceGr , Vertice );
-      // 毎フレーム送るにはおもすぎる
-      //ModelStr = Faces.Select(f => f.TriString).ConcatStr();
+
       cast = new SphereCast(Matrix.Zero);
     }
 
@@ -178,14 +191,14 @@ namespace SharpDXTest
       Mesh.SetOnly(Vertice, Index.ToArray());
     }
 
-    public IEnumerable<Vector3> HitPos(RayWrap ray)
+    public IEnumerable<HitResult> HitPos(RayWrap ray)
     {
       foreach (var item in Faces)
       {
         var res = ray.IntersectFace(item);
         if (res.IsHit)
         {
-          yield return res.HitPosition;
+          yield return res;
         }
       }
     }
