@@ -222,13 +222,18 @@ namespace SharpHelper
             DeviceContext.ClearDepthStencilView(_zbufferView, DepthStencilClearFlags.Depth, 1.0F, 0);
         }
 
-        /// <summary>
-        /// Present scene to screen
-        /// </summary>
-        public void Present()
-        {
-            SwapChain.Present(1, PresentFlags.None);
-        }
+    /// <summary>
+    /// Present scene to screen
+    /// </summary>
+    public void Present()
+    {
+      var hasReason = Device.DeviceRemovedReason == Result.UnexpectedFailure;
+      if( hasReason )
+      {
+        System.Windows.Forms.MessageBox.Show(Device.DeviceRemovedReason.ToString());
+      }
+      SwapChain.Present(1, PresentFlags.None);
+    }
 
 
 

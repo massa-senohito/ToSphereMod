@@ -400,6 +400,48 @@ CamPos += Offset_Z * (*CamZAxis);
     {
       return Matrix.RotationQuaternion(q);
     }
+    public static Quaternion FromTo(this Vector3 vFrom, Vector3 vTo)
+    {
+      // [TODO] this page seems to have optimized version:
+      //    http://lolengine.net/blog/2013/09/18/beautiful-maths-quaternion-from-vectors
+
+      // [RMS] not ideal to explicitly normalize here, but if we don't,
+      //   output quaternion is not normalized and this causes problems,
+      //   eg like drift if we do repeated SetFromTo()
+      Vector3 from = vFrom.GetNormalized(), to = vTo.GetNormalized();
+      Vector3 bisector = (from + to).GetNormalized();
+      Quaternion q;
+      q.W = from.Dot(bisector);
+      if (q.W != 0)
+      {
+        Vector3 cross = from.Cross(bisector);
+        q.X = cross.X;
+        q.Y = cross.Y;
+        q.Z = cross.Z;
+      }
+      else
+      {
+        float invLength;
+        if (Math.Abs(from.X) >= Math.Abs(from.Y))
+        {
+          // V1.x or V1.z is the largest magnitude component.
+          invLength = (float)(1.0 / Math.Sqrt(from.X * from.X + from.Z * from.Z));
+          q.X = -from.Z * invLength;
+          q.Y = 0;
+          q.Z = +from.X * invLength;
+        }
+        else
+        {
+          // V1.y or V1.z is the largest magnitude component.
+          invLength = (float)(1.0 / Math.Sqrt(from.Y * from.Y + from.Z * from.Z));
+          q.X = 0;
+          q.Y = +from.Z * invLength;
+          q.Z = -from.Y * invLength;
+        }
+      }
+      q.Normalize();   // aaahhh just to be safe...
+      return q;
+    }
 
     static float Copysign(float a, float b)
     {
