@@ -17,7 +17,7 @@ using SharpHelper;
 
 using Buffer11 = SharpDX.Direct3D11.Buffer;
 
-namespace Tutorial16
+namespace Platform
 {
   public static class Program
   {
@@ -38,18 +38,19 @@ namespace Tutorial16
     }
 
     static MMDModel model = new MMDModel(@"../../mikuCSV.csv");
-    static MMDModel axis ;
+    static DraggableAxis axis ;
     static Vector2 clicked = Vector2.Zero;
     static RayWrap CameraRay;
 
-    static SharpFPS fpsCounter = new SharpFPS();
+    public static SharpFPS FpsCounter = new SharpFPS();
     public static VDBDebugger debug;
-    static TrackBallCamera camera = new TrackBallCamera(new Vector3(0,10,10) , new Vector3(0,10,0));
+    public static TrackBallCamera Camera = new TrackBallCamera(new Vector3(0,10,10) , new Vector3(0,10,0));
     //static TrackBallCamera camera = new TrackBallCamera(new Vector3(0,5,5) , new Vector3(0,0,0));
     static Matrix Projection;
     static Matrix View;
-    static Mouse mouse =new Mouse();
+    static Mouse mouse = new Mouse();
     static RenderForm Form;
+
     static void PostViewUpdate(SharpDevice device)
     {
 #if FONT
@@ -57,18 +58,18 @@ namespace Tutorial16
           device.Font.Begin();
 
           //draw string
-          fpsCounter.Update();
-          device.Font.DrawString("FPS: " + fpsCounter.FPS, 0, 0);
+          FpsCounter.Update();
+          device.Font.DrawString("FPS: " + FpsCounter.FPS, 0, 0);
           var startRay = CordUtil.ScreenToWorld(clicked, 0, new Vector2(Form.Size.Width, Form.Size.Height), View, Projection);
           var endRay = CordUtil.ScreenToWorld(clicked, 1, new Vector2(Form.Size.Width, Form.Size.Height), View, Projection);
 
           
-
-          device.Font.DrawString("mouse: " + startRay, 0, 30);
-          device.Font.DrawString("mouseto: " + endRay, 0, 60);
           var viewport = new ViewportF(0, 0, Form.Size.Width, Form.Size.Height);
           CameraRay = //new RayWrap(startRay, endRay);
             new RayWrap(Ray.GetPickRay((int)clicked.X, (int)clicked.Y, viewport, View * Projection));
+      var currentRay = new RayWrap(Ray.GetPickRay((int)mouse.Position.X, (int)mouse.Position.Y, viewport, View * Projection));
+          device.Font.DrawString("mouse: " + CameraRay.From, 0, 30);
+          device.Font.DrawString("mouseto: " + CameraRay.To, 0, 60);
           debug.vdb_label("model");
           debug.Send(axis.ModelStr);
           debug.vdb_label("ray");
@@ -85,8 +86,8 @@ namespace Tutorial16
               model.ToSphere(hits[0].HitPosition);
             }
           }
-#else
 
+#endif
           var hits = axis.HitPos(CameraRay).ToArray();
           for (int j = 0; j < hits.Count(); j++)
           {
@@ -94,7 +95,7 @@ namespace Tutorial16
             debug.Send(hits[j].HitPosition.DebugStr());
             device.Font.DrawString("hit: " + hits[j].Info, 0, 90 + 30 * j);
           }
-#endif
+        axis.OnClicked(mouse,currentRay);
 
           //flush text to view
           device.Font.End();
@@ -130,7 +131,7 @@ namespace Tutorial16
 #region 
       Form.MouseClick += Form_MouseClick;
       Form.MouseMove += Form_MouseMove;
-      axis = new MMDModel("axis/axisHead.csv");
+      axis = new DraggableAxis("axis/axisHead.csv");
       debug = new VDBDebugger();
 #endregion
       using (SharpDevice device = new SharpDevice(Form))
@@ -181,7 +182,7 @@ namespace Tutorial16
 
 #endif
         //init frame counter
-        fpsCounter.Reset();
+        FpsCounter.Reset();
         device.SetBlend(BlendOperation.Add, BlendOption.SourceAlpha, BlendOption.InverseSourceAlpha);
 
 
@@ -212,12 +213,11 @@ namespace Tutorial16
 
           Matrix view = Matrix.LookAtLH(from, to, Vector3.UnitY);
 #else
-          View = camera.GetView();
+          View = Camera.GetView();
           //View = Matrix.LookAtLH(new Vector3(0, 30, 70), new Vector3(0, 0, 0), Vector3.UnitY);
-          camera.Update(mouse,fpsCounter.Delta*0.001f);
+          Camera.Update(mouse,FpsCounter.Delta*0.001f);
           mouse.Update();
-          //camera.Move(new Vector3(0.1f, 0, 0));
-          Vector3 from = camera.Position;
+          Vector3 from = Camera.Position;
           if (!float.IsNaN(from.X))
           {
             debug.vdb_label("campos");
@@ -404,6 +404,7 @@ namespace Tutorial16
       var viewport = new ViewportF(0, 0, form.Size.Width, form.Size.Height);
       mouse.IsMoved = true;
       mouse.Clicked = e.Button == MouseButtons.Left;
+      mouse.RightClicked = e.Button == MouseButtons.Right;
       if (mouse.Clicked)
       {
         mouse.LastClickedPos = mouse.Position;

@@ -273,6 +273,9 @@ CamPos += Offset_Z * (*CamZAxis);
 
   public static class Util
   {
+    public const float ZeroTolerancef = 1e-06f;
+
+
     public static float Abs(this float f)
     {
       return Math.Abs(f);
@@ -292,9 +295,9 @@ CamPos += Offset_Z * (*CamZAxis);
       return (v - other).Abs() < eps;
     }
 
-    public static bool IsNearlyZero(this float v)
+    public static bool IsNearlyZero(this float v , float eps = float.Epsilon)
     {
-      return v.IsNearlyEqual(0.0f);
+      return v.IsNearlyEqual(0.0f,eps);
     }
 
 
@@ -307,6 +310,10 @@ CamPos += Offset_Z * (*CamZAxis);
       return int.Parse(s);
     }
 
+    public static void DebugWrite(this string s)
+    {
+      Debug.WriteLine(Platform.Program.FpsCounter.FrameCount + " " + s);
+    }
 
     public static IEnumerable <Vector3> ParseCSV( IEnumerable<string> lines)
     {
@@ -350,7 +357,12 @@ CamPos += Offset_Z * (*CamZAxis);
 
   public static class CordUtil
   {
-
+    public static Vector2 Normal(this Vector2 v , Vector2 v2)
+    {
+      var temp = (v - v2);
+      temp.Normalize();
+      return new Vector2(-temp.Y , temp.X);
+    }
     public static float Dot(this Vector3 v, Vector3 v2)
     {
       return Vector3.Dot(v, v2);
@@ -626,8 +638,15 @@ D3DXVECTOR3* CalcScreenToWorld(
       get;
       private set;
     }
+
     float Length;
-    Vector3 Dir;
+
+    public Vector3 Dir
+    {
+      get;
+      private set;
+    }
+
     Ray Ray;
 
     public RayWrap(Vector3 from , Vector3 to)
@@ -672,7 +691,7 @@ D3DXVECTOR3* CalcScreenToWorld(
       var isIn = dist < Length;
       if (intersects && true)
       {
-        return new HitResult(From + Dir * dist,face.MatName);
+        return new HitResult(From + Dir * dist,face.MatName.Replace("\"",""));
       }
       return HitResult.Null;
 
@@ -716,27 +735,48 @@ D3DXVECTOR3* CalcScreenToWorld(
     public Vector3 P1
     {
       get;
+      private set;
     }
     public Vector3 P2
     {
       get;
+      private set;
     }
     public Vector3 P3
     {
       get;
+      private set;
+    }
+    public Vector3 P1O
+    {
+      get;
+      private set;
+    }
+    public Vector3 P2O
+    {
+      get;
+      private set;
+    }
+    public Vector3 P3O
+    {
+      get;
+      private set;
     }
 
     public Vector3 AB
     {
       get;
+      private set;
     }
     public Vector3 BC
     {
       get;
+      private set;
     }
     public Vector3 CA
     {
       get;
+      private set;
     }
     public Vector3 BaryCentric;
     public Face(Vector3 p1,Vector3 p2 ,Vector3 p3,string matName)
@@ -744,6 +784,9 @@ D3DXVECTOR3* CalcScreenToWorld(
       P1 = p1;
       P2 = p2;
       P3 = p3;
+      P1O = p1;
+      P2O = p2;
+      P3O = p3;
       var n1 = P1 - P2;
       var n2 = P1 - P3;
       n1.Normalize();
@@ -755,6 +798,17 @@ D3DXVECTOR3* CalcScreenToWorld(
       CA = P1 - P3;
       MatName = matName;
     }
+
+    public void Update(Matrix matrix)
+    {
+      P1 = matrix.TransByMat(P1O).ToV3();
+      P2 = matrix.TransByMat(P2O).ToV3();
+      P3 = matrix.TransByMat(P3O).ToV3();
+      AB = P2 - P1;
+      BC = P3 - P2;
+      CA = P1 - P3;
+    }
+
     public string TriString
     {
       get

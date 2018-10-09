@@ -19,35 +19,97 @@ namespace SharpDXTest
 
   class ClickState
   {
-
+    f3.AxisTranslationWidget XAxis = new f3.AxisTranslationWidget(0);
+    f3.AxisTranslationWidget YAxis = new f3.AxisTranslationWidget(1);
+    f3.AxisTranslationWidget ZAxis = new f3.AxisTranslationWidget(2);
     public ClickedAxis Axis;
-    public Vector3 ClickedPos;
-    public ClickState(Vector3 vector,ClickedAxis axis)
+    public bool IsDragging;
+    public MMDModel Parent;
+
+    public ClickState(MMDModel parent, ClickedAxis axis)
     {
       Axis = axis;
-      ClickedPos = vector;
+      Parent = parent;
     }
-    public static ClickState Null = new ClickState(Vector3.Zero,ClickedAxis.None);
-    public void Update(Vector3 vector,ClickedAxis axis)
+
+    public void EndClick()
     {
-      ClickedPos = vector;
-      Axis = axis;
+      Axis = ClickedAxis.None;
+      IsDragging = false;
     }
-     
+
+    public void Update(HitResult res, ClickedAxis axis)
+    {
+      Axis = axis;
+      IsDragging = true;
+      switch (axis)
+      {
+        case ClickedAxis.X:
+          XAxis.BeginCapture(Parent, res);
+          break;
+        case ClickedAxis.Y:
+          YAxis.BeginCapture(Parent, res);
+          break;
+        case ClickedAxis.Z:
+          ZAxis.BeginCapture(Parent, res);
+          break;
+        case ClickedAxis.None:
+          break;
+        default:
+          break;
+      }
+    }
+    public void Update(RayWrap ray)
+    {
+      switch (Axis)
+      {
+        case ClickedAxis.X:
+          XAxis.UpdateCapture(Parent, ray);
+          break;
+        case ClickedAxis.Y:
+          YAxis.UpdateCapture(Parent, ray);
+          break;
+        case ClickedAxis.Z:
+          ZAxis.UpdateCapture(Parent, ray);
+          break;
+        case ClickedAxis.None:
+          break;
+        default:
+          break;
+      }
+
+    }
+
+
   }
   internal class DraggableAxis : MMDModel
   {
 
-    ClickState state = ClickState.Null;
+    ClickState state;
+
 
     public DraggableAxis(string path):base(path)
     {
+      state = new ClickState(this,ClickedAxis.None);
 
     }
 
     // hitpos からrayがくる
-    void OnClicked(RayWrap ray)
+    public void OnClicked(Mouse mouse,RayWrap ray)
     {
+      if(!mouse.Clicked)
+      {
+        state.EndClick();
+        return;
+      }
+        Util.DebugWrite($"DraggingState {state.IsDragging}");
+      if(state.IsDragging)
+      {
+        Util.DebugWrite($"Dragging {state.Axis}");
+        Dragging(ray);
+        return;
+      }
+
       foreach (var item in Faces)
       {
         var res = ray.IntersectFace(item);
@@ -55,35 +117,32 @@ namespace SharpDXTest
         {
           if(res.Info == "red")
           {
-            state.Update(res.HitPosition, ClickedAxis.X);
+            state.Update(res, ClickedAxis.X);
           }
           if(res.Info == "green")
           {
-            state.Update(res.HitPosition, ClickedAxis.Y);
+            state.Update(res, ClickedAxis.Y);
           }
           if(res.Info == "blue")
           {
-            state.Update(res.HitPosition, ClickedAxis.Z);
+            state.Update(res, ClickedAxis.Z);
           }
+          Util.DebugWrite($"start {res.Info}");
         }
-        // 別のとこクリックするとドラッグ外す
-        else
-        {
-          state = ClickState.Null;
-        }
+
       }
 
     }
 
-    void Dragging()
+    void Dragging(RayWrap ray)
     {
-
+      state.Update(ray);
     }
   }
 }
 
+#if true
 
-/*
 namespace f3
 {
 	//
@@ -107,7 +166,11 @@ namespace f3
 		{
 			nTranslationAxis = nFrameAxis;
 		}
-
+    public enum CoordSpace
+    {
+      ObjectCoords,
+      WorldCoords,
+    }
 		// stored frames from target used during click-drag interaction
 		Frame3f translateFrameL;		// local-spaace frame
 		Frame3f translateFrameW;		// world-space frame
@@ -115,35 +178,49 @@ namespace f3
 
 		// computed values during interaction
 		Frame3f raycastFrame;		// camera-facing plane containing translateAxisW
-		float fTranslateStartT;		// start T-value along translateAxisW
-
-		public bool BeginCapture(ITransformable target, Ray3f worldRay, UIRayHit hit)
+		float fTranslateStartT;   // start T-value along translateAxisW
+    public static Frame3f GetGameObjectFrame(MMDModel go, CoordSpace eSpace)
+    {
+      if (eSpace == CoordSpace.WorldCoords)
+        return new Frame3f(go.Position, go.Rotation);
+      else if (eSpace == CoordSpace.ObjectCoords)
+        //return new Frame3f(go.transform.localPosition, go.transform.localRotation);
+        return new Frame3f(go.Position, go.Rotation);
+      else
+        throw new ArgumentException("not possible without refernce to scene!");
+    }
+    public static float ClosestPointOnLineT(Vector3 p0, Vector3 dir, Vector3 pt)
+    {
+      float t = (pt - p0).Dot(dir);
+      return t;
+    }
+    public bool BeginCapture(MMDModel target, HitResult hit)
 		{
 			// save local and world frames
-			translateFrameL = target.GetLocalFrame (CoordSpace.ObjectCoords);
-			translateFrameW = target.GetLocalFrame (CoordSpace.WorldCoords);
+			translateFrameL = GetGameObjectFrame (target,CoordSpace.ObjectCoords);
+			translateFrameW = GetGameObjectFrame (target,CoordSpace.WorldCoords);
 			translateAxisW = translateFrameW.GetAxis (nTranslationAxis);
 
 			// save t-value of closest point on translation axis, so we can find delta-t
-			Vector3 vWorldHitPos = hit.hitPos;
-			fTranslateStartT = Distance.ClosestPointOnLineT(
+			Vector3 vWorldHitPos = hit.HitPosition;
+			fTranslateStartT = ClosestPointOnLineT(
 				translateFrameW.Origin, translateAxisW, vWorldHitPos);
 
             // construct plane we will ray-intersect with in UpdateCapture()
-            Vector3 makeUp = Vector3.Cross(FPlatform.MainCamera.Forward(), translateAxisW).Normalized;
+            Vector3 makeUp = Vector3.Cross(Platform.Program.Camera.Forward, translateAxisW).GetNormalized();
             Vector3 vPlaneNormal = Vector3.Cross(makeUp, translateAxisW).GetNormalized();
             raycastFrame = new Frame3f(vWorldHitPos, vPlaneNormal);
 
             return true;
 		}
 
-		public override bool UpdateCapture(ITransformable target, Ray3f worldRay)
+		public bool UpdateCapture(MMDModel target, RayWrap worldRay)
 		{
 			// ray-hit with plane that contains translation axis
-			Vector3 planeHit = raycastFrame.RayPlaneIntersection(worldRay.Origin, worldRay.Direction, 2);
+			Vector3 planeHit = raycastFrame.RayPlaneIntersection(worldRay.From, worldRay.Dir, 2).Value;
 
 			// figure out new T-value along axis, then our translation update is delta-t
-			float fNewT = Distance.ClosestPointOnLineT (translateFrameW.Origin, translateAxisW, planeHit);
+			float fNewT = ClosestPointOnLineT (translateFrameW.Origin, translateAxisW, planeHit);
 			float fDeltaT = (fNewT - fTranslateStartT);
             fDeltaT *= TranslationScaleF();
             if (DeltaDistanceConstraintF != null)
@@ -153,36 +230,28 @@ namespace f3
             Frame3f newFrame = translateFrameL;
 			newFrame.Origin += fDeltaT * translateFrameL.GetAxis(nTranslationAxis);
 
-			// update target
-			target.SetLocalFrame (newFrame, CoordSpace.ObjectCoords);
-
+      // update target
+      //target.SetLocalFrame (newFrame, CoordSpace.ObjectCoords);
+      target.Position = newFrame.Origin;
 			return true;
 		}
 
-        public override bool EndCapture(ITransformable target)
+        public bool EndCapture(MMDModel target)
         {
             return true;
         }
 
-        public override void Disconnect()
-        {
-            RootGameObject.Destroy();
-        }
 
-
-        static Interval1d CosVisibilityRange = new Interval1d(
-            -Math.Cos(45 * MathUtil.Deg2Rad), Math.Cos(15 * MathUtil.Deg2Rad));
-        public override bool CheckVisibility(ref Frame3f curFrameW, ref Vector3d eyePosW) {
-            Vector3d axis = curFrameW.GetAxis(nTranslationAxis);
-            Vector3d eyevec = (eyePosW - curFrameW.Origin).Normalized;
-            double dot = axis.Dot(eyevec);
-            return CosVisibilityRange.Contains(dot);
-        }
+        //static Interval1d CosVisibilityRange = new Interval1d(
+        //    -Math.Cos(45 * MathUtil.Deg2Rad), Math.Cos(15 * MathUtil.Deg2Rad));
+        //public bool CheckVisibility(ref Frame3f curFrameW, ref Vector3d eyePosW) {
+        //    Vector3d axis = curFrameW.GetAxis(nTranslationAxis);
+        //    Vector3d eyevec = (eyePosW - curFrameW.Origin).Normalized;
+        //    double dot = axis.Dot(eyevec);
+        //    return CosVisibilityRange.Contains(dot);
+        //}
 
     }
 }
 
-
-   
-   
-   */
+#endif

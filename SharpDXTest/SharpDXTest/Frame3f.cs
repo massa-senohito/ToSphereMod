@@ -403,23 +403,24 @@ namespace g3
         }
 
   */
-        /// <summary>
-        /// Compute intersection of ray with plane passing through frame origin, normal
-        /// to the specified axis. 
-        /// If the ray is parallel to the plane, no intersection can be found, and
-        /// we return Vector3.Invalid
-        /// </summary>
-        public Option<Vector3> RayPlaneIntersection(Vector3 ray_origin, Vector3 ray_direction, int nAxisAsNormal)
-        {
-            Vector3 N = GetAxis(nAxisAsNormal);
-            float d = -Vector3.Dot(Origin, N);
-            float div = Vector3.Dot(ray_direction, N);
-            if //(MathUtil.EpsilonEqual(div.Is, 0, MathUtil.ZeroTolerancef))
-        (div.IsNearlyZero())
-                return Option.Return<Vector3>();
-            float t = -(Vector3.Dot(ray_origin, N) + d) / div;
-            return Option.Return( ray_origin + t * ray_direction );
-        }
+    /// <summary>
+    /// Compute intersection of ray with plane passing through frame origin, normal
+    /// to the specified axis. 
+    /// If the ray is parallel to the plane, no intersection can be found, and
+    /// we return Vector3.Invalid
+    /// </summary>
+    public Option<Vector3> RayPlaneIntersection(Vector3 ray_origin, Vector3 ray_direction, int nAxisAsNormal)
+    {
+      Vector3 N = GetAxis(nAxisAsNormal);
+      float d = -Vector3.Dot(Origin, N);
+      float div = Vector3.Dot(ray_direction, N);
+      if (div.IsNearlyZero(Util.ZeroTolerancef))
+      {
+        return Option.Return<Vector3>();
+      }
+      float t = -(Vector3.Dot(ray_origin, N) + d) / div;
+      return Option.Return(ray_origin + t * ray_direction);
+    }
 
 
         /// <summary>

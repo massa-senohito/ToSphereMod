@@ -18,6 +18,7 @@ namespace SharpHelper
 
         private int n1;
         private long timeout;
+    public int FrameCount { get; private set; }
     private long pretime;
     public long Delta
     {
@@ -56,6 +57,7 @@ namespace SharpHelper
         {
             n1++;
       pretime = watch.ElapsedMilliseconds;
+      FrameCount++;
             if (watch.ElapsedMilliseconds - timeout >= 1000)
             {
                 FPS = n1;

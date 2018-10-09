@@ -150,14 +150,59 @@ namespace SharpDXTest
       PixelShader = device.DeviceContext.PixelShader;
 
     }
-    public void Update(SharpDevice device, Matrix worldViewProjection)
+
+    public Matrix World = Matrix.Identity;
+
+    public Vector3 Position
+    { 
+      get
+      {
+        return World.TranslationVector;
+      }
+      set
+      {
+        World.TranslationVector = value;
+        //Util.DebugWrite(World.TransByMat(Vector3.UnitX).ToString());
+        foreach (var i in Faces)
+        {
+
+          i.Update(World);
+          //Util.DebugWrite(i.TriString);
+          //return;
+        }
+        // todo 今の所頂点座標を変更する必要がないのでいじってはいない
+        //for (int i = 0; i < Vertice.Length; i++)
+        //{
+        //  var item = Vertice[i];
+
+        //  item.Position = World.TransByMat(item.Position).ToV3();
+        //}
+
+      }
+    }
+
+    public Quaternion Rotation
+    {
+      get
+      {
+        World.Decompose(out Vector3 scale, out Quaternion rot, out Vector3 trans);
+        return rot;
+      }
+      set
+      {
+        // rotationをなくさないと相対回転になる
+        World = World * Matrix.RotationQuaternion(value);
+      }
+    }
+
+    public void Update(SharpDevice device, Matrix ViewProjection)
     {
       //apply shader
       Shader.Apply();
 
       //apply constant buffer to shader
       VertexShader.SetConstantBuffer(0, Buffer);
-
+      var worldViewProjection = World * ViewProjection;
       device.UpdateData<Matrix>(Buffer, worldViewProjection);
       Mesh.Begin();
       for (int i = 0; i < Mesh.SubSets.Count; i++)

@@ -14,6 +14,7 @@ public class Mouse
     private set;
   }
   public bool Clicked;
+  public bool RightClicked;
   public Vector3 WorldPosition;
   public Vector3 LastClickedWorldPos;
   public Vector2 Delta
@@ -36,7 +37,7 @@ public class TrackBallCamera
   public float distance = 15f;
   VDBDebugger debug;
   public float Multi = 0.8f; // distance of the virtual trackball.
-
+  public Vector3 Forward;
   public Vector3 Target;
   public Vector3 Position;
   public Matrix View;
@@ -44,7 +45,7 @@ public class TrackBallCamera
   {
     return View;
   }
-  private Vector3? lastMousePosition;
+  private Vector2? lastMousePosition;
   // Use this for initialization
 
   public TrackBallCamera(Vector3 pos, Vector3 target)
@@ -120,7 +121,15 @@ public class TrackBallCamera
     result.Z = (num8 - num11) * point.X + (num9 + num10) * point.Y + (1f - (num4 + num5)) * point.Z;
     return result;
   }
-  // Update is called once per frame
+
+  void SetPosition(Vector3 pos)
+  {
+
+    Position = pos;
+    Forward = Target - Position;
+    Forward.Normalize();
+  }
+
   public void Update(Mouse mouse, float delta)
   {
 #if false
@@ -164,9 +173,9 @@ public class TrackBallCamera
     }
 #endif
 
-    var mousePosn = mouse.WorldPosition;
+    var mousePosn = mouse.Position;
 
-    var mouseBtn = mouse.Clicked;
+    var mouseBtn = mouse.RightClicked;
     // ボタンが押されていないと lastMousePosition = nullになる
     if (mouseBtn)
     {
@@ -176,9 +185,9 @@ public class TrackBallCamera
         var lastPosn = Position;
         var targetPosn = Target;
 
-        var rotation = //FigureOutAxisAngleRotation(mouse);
+        var rotation = FigureOutAxisAngleRotation(mouse);
         //new Quaternion(Vector3.UnitY*0.1f, 0.9f);
-          Vector3.UnitY.QuatFromEuler();//* 1000 *  delta;
+          //Vector3.UnitY.QuatFromEuler();//* 1000 *  delta;
         //rotation.Normalize();
         var vecPos = (targetPosn - lastPosn);
         vecPos.Normalize();
@@ -186,7 +195,7 @@ public class TrackBallCamera
         vecPos = vecPos * -distance;
         var translationVector = opA(rotation, vecPos); //(Transform(vecPos, rotation) );
 
-        Position = translationVector + targetPosn;
+        SetPosition( translationVector + targetPosn );
           //CartesianPos(mouse);
         var tDir = (Target - Position);
         //Console.WriteLine(": {0} ", rotation.EulerAngle());
@@ -257,15 +266,20 @@ public class TrackBallCamera
     {
       return Quaternion.Identity;
     }
-#if true
+#if false 
     Vector3 p1 = lastMousePosition.Value - Position;
     Vector3 p2 = mouse.WorldPosition - Position;
 
     // 移動距離はマウスの2次元距離にしないとカメラ回転の影響を
     //Console.WriteLine(" {0} : {1}", p1, p2);
-    var axisOfRotation = Vector3.Cross(p2, p1);
+    var axisOfRotation = Vector3.Cross(p1, p2);
     axisOfRotation.Normalize();
     //axisOfRotation = -axisOfRotation;
+#else
+    Vector2 p1 = lastMousePosition.Value;
+    Vector2 p2 = mouse.Position;
+    var axisOfRotation2D = p1.Normal( p2);
+    var axisOfRotation = new Vector3(axisOfRotation2D.X, -axisOfRotation2D.Y,0);
 #endif
     float moveLen = (mouse.Delta).Length();
 
