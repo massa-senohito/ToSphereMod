@@ -216,8 +216,13 @@ namespace f3
 
 		public bool UpdateCapture(MMDModel target, RayWrap worldRay)
 		{
+      int normalAxis = 2;
+      if(nTranslationAxis == 2)
+      {
+        normalAxis = 1;
+      }
 			// ray-hit with plane that contains translation axis
-			Vector3 planeHit = raycastFrame.RayPlaneIntersection(worldRay.From, worldRay.Dir, 2).Value;
+			Vector3 planeHit = raycastFrame.RayPlaneIntersection(worldRay.From, worldRay.Dir, normalAxis).Value;
 
 			// figure out new T-value along axis, then our translation update is delta-t
 			float fNewT = ClosestPointOnLineT (translateFrameW.Origin, translateAxisW, planeHit);
