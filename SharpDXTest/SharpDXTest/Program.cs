@@ -131,6 +131,7 @@ namespace Platform
 #region 
       Form.MouseClick += Form_MouseClick;
       Form.MouseMove += Form_MouseMove;
+      Form.MouseWheel += Form_MouseWheel;
       axis = new DraggableAxis("axis/axisHead.csv");
       debug = new VDBDebugger();
 #endregion
@@ -395,6 +396,11 @@ namespace Platform
       }
     }
 
+    private static void Form_MouseWheel(object sender, MouseEventArgs e)
+    {
+      mouse.OnMouseMove(e);
+    }
+
     private static void Form_MouseMove(object sender, MouseEventArgs e)
     {
       var form = Form;
@@ -418,6 +424,7 @@ namespace Platform
       mouse.WorldPosition = startRay;
       //System.Diagnostics.Debug.WriteLine(startRay + " start");
       //System.Diagnostics.Debug.WriteLine(mouse.LastClickedWorldPos + " last");
+      mouse.OnMouseMove(e);
     }
 
     private static void Form_MouseClick(object sender, MouseEventArgs e)

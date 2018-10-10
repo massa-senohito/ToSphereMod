@@ -23,12 +23,23 @@ public class Mouse
     private set;
   }
   public bool IsMoved;
+  public int WheelDelta
+  {
+    get;
+    private set;
+  }
+  public void OnMouseMove(System.Windows.Forms.MouseEventArgs e)
+  {
+    Util.DebugWrite(e.Delta.ToString());
+    WheelDelta = Math.Sign(e.Delta);
+  }
   public void Update()
   {
     //WorldPosition = wpos;
     Delta = Position - LastPosition;
     LastPosition = Position;
     IsMoved = false;
+    WheelDelta = 0;
   }
 }
 public class TrackBallCamera
@@ -129,7 +140,15 @@ public class TrackBallCamera
     Forward = Target - Position;
     Forward.Normalize();
   }
-
+  Vector3 TowardTarget()
+  {
+    var lastPosn = Position;
+    var targetPosn = Target;
+    var vecPos = (targetPosn - lastPosn);
+    vecPos.Normalize();
+    return vecPos;
+  }
+  
   public void Update(Mouse mouse, float delta)
   {
 #if false
@@ -174,37 +193,21 @@ public class TrackBallCamera
 #endif
 
     var mousePosn = mouse.Position;
-
     var mouseBtn = mouse.RightClicked;
+    if (mouse.WheelDelta != 0)
+    {
+      distance -= mouse.WheelDelta;
+      UpdatePosition();
+    }
     // ボタンが押されていないと lastMousePosition = nullになる
     if (mouseBtn)
     {
       if (lastMousePosition.HasValue)
       {
-        // we are moving from here
-        var lastPosn = Position;
-        var targetPosn = Target;
 
         var rotation = FigureOutAxisAngleRotation(mouse);
-        //new Quaternion(Vector3.UnitY*0.1f, 0.9f);
-          //Vector3.UnitY.QuatFromEuler();//* 1000 *  delta;
-        //rotation.Normalize();
-        var vecPos = (targetPosn - lastPosn);
-        vecPos.Normalize();
-        var dir = new Vector3(vecPos.X, vecPos.Y, vecPos.Z);
-        vecPos = vecPos * -distance;
-        var translationVector = opA(rotation, vecPos); //(Transform(vecPos, rotation) );
+        UpdatePosition(rotation);
 
-        SetPosition( translationVector + targetPosn );
-          //CartesianPos(mouse);
-        var tDir = (Target - Position);
-        //Console.WriteLine(": {0} ", rotation.EulerAngle());
-        tDir.Normalize();
-        Vector3 up = Vector3.Up;//tDir.Dot(Vector3.Up) < 0 ? Vector3.Down :Vector3.Up ;
-
-        View = Matrix.LookAtLH(Position, targetPosn, up);
-        //Console.WriteLine(": {0} ", up);
-        //Tutorial16.Program.debug.Send(Position.DebugStr());
         lastMousePosition = mousePosn;
       }
       else
@@ -217,6 +220,21 @@ public class TrackBallCamera
       lastMousePosition = null;
     }
   }
+
+  private void UpdatePosition(Quaternion rotation = new Quaternion())
+  {
+    var toword = TowardTarget();
+    var vecPos = toword * -distance;
+
+    var translationVector = opA(rotation, vecPos); //(Transform(vecPos, rotation) );
+
+    SetPosition(translationVector + Target);
+          //CartesianPos(mouse);
+    Vector3 up = Vector3.Up;//tDir.Dot(Vector3.Up) < 0 ? Vector3.Down :Vector3.Up ;
+
+    View = Matrix.LookAtLH(Position, Target, up);
+  }
+
   float Theta;
   float Phi;
   Vector3 CartesianPos(Mouse mouse)
