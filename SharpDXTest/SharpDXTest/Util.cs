@@ -274,7 +274,10 @@ CamPos += Offset_Z * (*CamZAxis);
   public static class Util
   {
     public const float ZeroTolerancef = 1e-06f;
-
+    public static void ArrayFullCopy(this Array array , Array target)
+    {
+      Array.Copy(array, target, array.Length);
+    }
 
     public static float Abs(this float f)
     {

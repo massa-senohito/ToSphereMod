@@ -62,10 +62,15 @@ namespace SharpDXTest
   public class MMDModel : System.IDisposable
   {
     public Vert[] Vertice;
+    public Vert[] OrigVertice
+    {
+      get;
+      private set;
+    }
     public int[] Index;
     public Face[] Faces;
     public IEnumerable<Material> Materials;
-    SphereCast cast;
+    SphereCast Cast;
 
     SharpMesh GetSharpMesh(SharpDevice device)
     {
@@ -121,10 +126,12 @@ namespace SharpDXTest
       var gs = gr.Where(g => !g.Key.Contains(";")).ToDictionary(s=>s.Key,g=>g.ToList());
 
       Vertice = ParseCSV(gs["Vertex"]).ToArray();
+      OrigVertice = new Vert[Vertice.Length];
+      Vertice.ArrayFullCopy(OrigVertice);
       var faceGr = gs["Face"].GroupBy(s => s.Split(',')[1]).ToDictionary(s=>s.Key,g=>g.ToList());
       Materials = Material.MakeFromCSV(gs["Material"], faceGr , Vertice );
 
-      cast = new SphereCast(Matrix.Zero);
+      Cast = new SphereCast(Matrix.Zero);
     }
 
     SharpMesh Mesh;
@@ -213,6 +220,17 @@ namespace SharpDXTest
       }
 
     }
+
+    public void OnFactorChanged(float factor)
+    {
+      Cast.fac = factor;
+    }
+
+    public void OnRadiusChanged(float radius)
+    {
+      Cast.radius = radius;
+    }
+
     public string ModelStr
     {
       get; private set;
@@ -232,9 +250,9 @@ namespace SharpDXTest
 
     public void ToSphere(Vector3 pos)
     {
-      cast.Offset = pos;
-      var vs = Vertice.Select(v => v.Position).ToArray();
-      var vd = cast.GetSpereUntilEnd(vs);
+      Cast.Offset = pos;
+      var vs = OrigVertice.Select(v => v.Position).ToArray();
+      var vd = Cast.GetSpereUntilEnd(vs);
       for (int i = 0; i < vd.Length; i++)
       {
         Vertice[i].Position = vd[i];

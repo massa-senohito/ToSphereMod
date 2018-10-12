@@ -50,6 +50,7 @@ namespace Platform
     static Matrix View;
     static Mouse mouse = new Mouse();
     static RenderForm Form;
+    static BlenderModifier.SphereModForm ModForm = new BlenderModifier.SphereModForm();
 
     static void PostViewUpdate(SharpDevice device)
     {
@@ -127,6 +128,10 @@ namespace Platform
       //render form
       Form = new RenderForm();
       Form.Text = "Tutorial 16: Environment Mapping";
+
+      ModForm.Show();
+      ModForm.SetFactorBoxChanged( OnFactorTextChanged );
+      ModForm.SetRadiusBoxChanged( OnFactorTextChanged );
       //frame rate counter
 #region 
       Form.MouseClick += Form_MouseClick;
@@ -302,6 +307,7 @@ namespace Platform
           //apply shader
           model.Update(device, View * Projection);
           axis.Update(device, View * Projection);
+          model.ToSphere(axis.Position);
 #endif
 #if CUBE
 
@@ -431,6 +437,12 @@ namespace Platform
     {
       clicked = new Vector2(e.X, e.Y);
       //System.Diagnostics.Debug.WriteLine(clicked);
+    }
+
+    private static void OnFactorTextChanged(object sender,EventArgs e)
+    {
+      model.OnFactorChanged(ModForm.Factor);
+      model.OnRadiusChanged(ModForm.Radius);
     }
   }
 }
