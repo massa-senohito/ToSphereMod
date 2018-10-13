@@ -73,7 +73,6 @@
     <Compile Include="Audio\SharpAudioDevice.cs" />
     <Compile Include="Audio\SharpAudioVoice.cs" />
     <Compile Include="ColladaImporter.cs" />
-    <Compile Include="SharpInput.cs" />
     <Compile Include="Skinning\AnimationManager.cs" />
     <Compile Include="Skinning\ModelData.cs" />
     <Compile Include="SharpCubeTarget.cs" />

@@ -250,6 +250,7 @@ CamPos += Offset_Z * (*CamZAxis);
     }
 #endif
   }
+
   public static class Ma
   {
     public static float Sin(float f)
@@ -405,6 +406,7 @@ CamPos += Offset_Z * (*CamZAxis);
       }
     }
   }
+
   public class RayWrap
   {
     public Vector3 From
@@ -474,33 +476,6 @@ CamPos += Offset_Z * (*CamZAxis);
       }
       return HitResult.Null;
 
-#if false
-      Vector3 v1 = From - face.P1;
-      Vector3 v2 = To - face.P1;
-      var n = face.Normal;
-      var c = face.BaryCentric;
-
-      if (v1.Dot(n) * v2.Dot(n) <= 0)
-      {
-        float d1 = n.Dot(v1).Abs();
-        float d2 = n.Dot(v2).Abs();
-        float a = d1 / (d1 + d2);
-        Vector3 v3 = (1 - a) * v1 + a * v2;
-        var AP = v3 - face.P1;
-        var BP = v3 - face.P2;
-        var CP = v3 - face.P3;
-        var c1 = face.AB.Cross(BP);
-        var c2 = face.BC.Cross(CP);
-        var c3 = face.CA.Cross(AP);
-        float dot12 = c1.Dot(c2);
-        float dot13 = c1.Dot(c3);
-        if (dot12 > 0 && dot13 > 0)
-        {
-          return new HitResult(v3);
-        }
-      }
-      return HitResult.Null;
-#endif
     }
  
   }

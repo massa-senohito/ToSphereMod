@@ -415,37 +415,19 @@ namespace Platform
 
     private static void Form_MouseWheel(object sender, MouseEventArgs e)
     {
-      mouse.OnMouseMove(e);
+      var startRay = new RayWrap(Ray.GetPickRay( e.X, e.Y, Viewport, View * Projection));
+      mouse.OnMouseMove(e,startRay);
     }
 
     private static void Form_MouseMove(object sender, MouseEventArgs e)
     {
-      var form = Form;
-      Vector2 screenPos = new Vector2(e.X, e.Y);
       var startRay = new RayWrap(Ray.GetPickRay( e.X, e.Y, Viewport, View * Projection));
-      mouse.IsMoved = true;
-      mouse.Clicked = e.Button == MouseButtons.Left;
-      mouse.RightClicked = e.Button == MouseButtons.Right;
-      if (mouse.Clicked)
-      {
-        mouse.LastClickedPos = mouse.Position;
-        mouse.LastClickedWorldPos = mouse.WorldPosition;
-      }
-      else
-      {
-
-      }
-      mouse.Position = screenPos;
-      mouse.WorldPosition = startRay.To;
-      //System.Diagnostics.Debug.WriteLine(startRay + " start");
-      //System.Diagnostics.Debug.WriteLine(mouse.LastClickedWorldPos + " last");
-      mouse.OnMouseMove(e);
+      mouse.OnMouseMove(e,startRay);
     }
 
     private static void Form_MouseClick(object sender, MouseEventArgs e)
     {
       clicked = new Vector2(e.X, e.Y);
-      //System.Diagnostics.Debug.WriteLine(clicked);
     }
 
     private static void OnFactorTextChanged(object sender,EventArgs e)

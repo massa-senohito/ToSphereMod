@@ -1,36 +1,82 @@
 ﻿using System;
 using System.Collections;
-
+using System.Windows.Forms;
 using SharpDX;
 using SharpDXTest;
 
 public class Mouse
 {
-  public Vector2 LastClickedPos;
-  public Vector2 Position;
+  public Vector2 LastClickedPos
+  {
+    get;
+    private set;
+  }
+  public Vector2 Position
+  {
+    get;
+    private set;
+  }
   public Vector2 LastPosition
   {
     get;
     private set;
   }
-  public bool Clicked;
-  public bool RightClicked;
-  public Vector3 WorldPosition;
-  public Vector3 LastClickedWorldPos;
+  public bool Clicked
+  {
+    get;
+    private set;
+  }
+  public bool RightClicked
+  {
+    get;
+    private set;
+  }
+
+  public Vector3 WorldPosition
+  {
+    get;
+    private set;
+  }
+  public Vector3 LastClickedWorldPos
+  {
+    get;
+    private set;
+  }
   public Vector2 Delta
   {
     get;
     private set;
   }
-  public bool IsMoved;
+
+  public bool IsMoved
+  {
+    get;
+    private set;
+  }
+
   public int WheelDelta
   {
     get;
     private set;
   }
-  public void OnMouseMove(System.Windows.Forms.MouseEventArgs e)
+
+  public void OnMouseMove(MouseEventArgs e , RayWrap startRay )
   {
-    Util.DebugWrite(e.Delta.ToString());
+      IsMoved = true;
+      Clicked = e.Button == MouseButtons.Left;
+      RightClicked = e.Button == MouseButtons.Right;
+      if (Clicked)
+      {
+        LastClickedPos = Position;
+        LastClickedWorldPos = WorldPosition;
+      }
+      else
+      {
+
+      }
+      Vector2 screenPos = new Vector2(e.X, e.Y);
+      Position = screenPos;
+      WorldPosition = startRay.To;
     WheelDelta = Math.Sign(e.Delta);
   }
   public void Update()
@@ -80,11 +126,6 @@ public class TrackBallCamera
 
   void Start()
   {
-    // ターゲットから15離れた位置まで自身を移動
-    //var startPosn = (this.transform.position - target.transform.position).normalized * distance;
-    //var position = startPosn + target.transform.position;
-    //transform.position = position;
-    //transform.LookAt(target.transform.position);
 
   }
   public static Vector3 Transform(Vector3 vec, Quaternion quat)
@@ -140,46 +181,6 @@ public class TrackBallCamera
   
   public void Update(Mouse mouse, float delta)
   {
-#if false
-    var mousePosn = Input.mousePosition;
-
-    var mouseBtn = Input.GetMouseButton(0);
-    // ボタンが押されていないと lastMousePosition = nullになる
-    if (mouseBtn)
-    {
-      if (lastMousePosition.HasValue)
-      {
-        // we are moving from here
-        var lastPosn = this.transform.position;
-        var targetPosn = target.transform.position;
-
-        // we have traced out this distance on a sphere from lastPosn
-        /*
-				var rotation = TrackBall(
-										lastMousePosition.Value.x, 
-										lastMousePosition.Value.y,
-										mousePosn.x,
-										mousePosn.y );
-				*/
-        var rotation = FigureOutAxisAngleRotation(lastMousePosition.Value, mousePosn);
-
-        var vecPos = (targetPosn - lastPosn).normalized * -distance;
-
-        this.transform.position = rotation * vecPos + targetPosn;
-        this.transform.LookAt(targetPosn);
-
-        lastMousePosition = mousePosn;
-      }
-      else
-      {
-        lastMousePosition = mousePosn;
-      }
-    }
-    else
-    {
-      lastMousePosition = null;
-    }
-#endif
 
     var mousePosn = mouse.Position;
     var mouseBtn = mouse.RightClicked;
@@ -230,69 +231,5 @@ public class TrackBallCamera
     var temp = new Vector3(x, y, z);
     return temp;
   }
-
-  Quaternion FigureOutAxisAngleRotation(Mouse mouse)
-  {
-#if false
-    if (lastMousePosn.X == mousePosn.X && lastMousePosn.Y == mousePosn.Y)
-      return Quaternion.Identity;
-
-    Vector3 near = new Vector3(0, 0, Camera.main.nearClipPlane);
-
-    Vector3 p1 = Camera.main.ScreenToWorldPoint(lastMousePosn + near);
-    Vector3 p2 = Camera.main.ScreenToWorldPoint(mousePosn + near);
-
-    //WriteLine("## {0} {1}", p1,p2);
-    var axisOfRotation = Vector3.Cross(p2, p1);
-
-    var twist = (p2 - p1).magnitude / (2.0f * virtualTrackballDistance);
-
-    if (twist > 1.0f)
-      twist = 1.0f;
-    if (twist < -1.0f)
-      twist = -1.0f;
-
-    var phi = (2.0f * Mathf.Asin(twist)) * 180 / Mathf.PI;
-
-    //WriteLine("AA: {0} angle: {1}",axisOfRotation, phi);
-
-    return Quaternion.AngleAxis(phi, axisOfRotation);
-#endif
-    var mousePosn = mouse.Position;
-    if (!mouse.IsMoved)
-    {
-      return Quaternion.Identity;
-    }
-#if false 
-    Vector3 p1 = lastMousePosition.Value - Position;
-    Vector3 p2 = mouse.WorldPosition - Position;
-
-    // 移動距離はマウスの2次元距離にしないとカメラ回転の影響を
-    //Console.WriteLine(" {0} : {1}", p1, p2);
-    var axisOfRotation = Vector3.Cross(p1, p2);
-    axisOfRotation.Normalize();
-    //axisOfRotation = -axisOfRotation;
-#else
-    Vector2 p1 = lastMousePosition.Value;
-    Vector2 p2 = mouse.Position;
-    var axisOfRotation2D = p1.Normal( p2);
-    var axisOfRotation = new Vector3(axisOfRotation2D.X, -axisOfRotation2D.Y,0);
-#endif
-    float moveLen = (mouse.Delta).Length();
-
-    var twist = moveLen * Multi;
-
-   Console.WriteLine("AA: {0} ", twist);
-
-    Vector3 vector3 = (axisOfRotation * twist);
-
-    //var rotation = new Vector3(-mouse.Delta.Y, mouse.Delta.X, 0);
-    //Console.WriteLine(" {0} ", rotation);
-    //return rotation.QuatFromEuler();
-
-    return
-      vector3.QuatFromEuler();
-  }
-
 
 }
