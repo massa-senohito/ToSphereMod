@@ -140,7 +140,7 @@ namespace SharpDXTest
       Cast = new SphereCast(Matrix.Zero);
     }
 
-    SharpMesh Mesh;
+    protected SharpMesh Mesh;
     Buffer Buffer;
     SharpShader Shader;
     VertexShaderStage VertexShader;

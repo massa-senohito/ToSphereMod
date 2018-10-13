@@ -68,6 +68,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CoordUtil.cs" />
+    <Compile Include="DebugLine.cs" />
     <Compile Include="DraggableAxis.cs" />
     <Compile Include="Frame3f.cs" />
     <Compile Include="MMDModel.cs" />

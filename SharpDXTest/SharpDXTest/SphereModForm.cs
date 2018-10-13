@@ -19,7 +19,7 @@ namespace BlenderModifier
     {
       InitializeComponent();
       FactorBox.Text = "0.3";
-      RadiusBox.Text = "0.2";
+      RadiusBox.Text = "2";
     }
 
     public void SetFactorBoxChanged(EventHandler f)
@@ -30,6 +30,11 @@ namespace BlenderModifier
     public void SetRadiusBoxChanged(EventHandler f)
     {
       RadiusBox.TextChanged += f;
+    }
+
+    public void SetOffsetBoxChanged(EventHandler f)
+    {
+      OffsetBox.TextChanged += f;
     }
 
     public V3 GetOffset()

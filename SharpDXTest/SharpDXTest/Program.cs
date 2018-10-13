@@ -1,6 +1,7 @@
 ﻿//#define CUBE
 //#define CUBEMAP
 //#define MODELCLK
+//#define DEBUGLINE
 #define FONT
 
 using System;
@@ -38,7 +39,8 @@ namespace Platform
     }
 
     static MMDModel model = new MMDModel(@"miku/mikuCSV.csv");
-    static DraggableAxis axis ;
+    static DraggableAxis axis = new DraggableAxis("axis/axis.csv");
+    static DebugLine line = new DebugLine("line/line.csv");
     static Vector2 clicked = Vector2.Zero;
     static RayWrap CameraRay;
 
@@ -48,6 +50,8 @@ namespace Platform
     //static TrackBallCamera camera = new TrackBallCamera(new Vector3(0,5,5) , new Vector3(0,0,0));
     static Matrix Projection;
     static Matrix View;
+    static ViewportF Viewport;
+
     static Mouse mouse = new Mouse();
     static RenderForm Form;
     static BlenderModifier.SphereModForm ModForm = new BlenderModifier.SphereModForm();
@@ -61,14 +65,9 @@ namespace Platform
           //draw string
           FpsCounter.Update();
           device.Font.DrawString("FPS: " + FpsCounter.FPS, 0, 0);
-          var startRay = CordUtil.ScreenToWorld(clicked, 0, new Vector2(Form.Size.Width, Form.Size.Height), View, Projection);
-          var endRay = CordUtil.ScreenToWorld(clicked, 1, new Vector2(Form.Size.Width, Form.Size.Height), View, Projection);
 
-          
-          var viewport = new ViewportF(0, 0, Form.Size.Width, Form.Size.Height);
-          CameraRay = //new RayWrap(startRay, endRay);
-            new RayWrap(Ray.GetPickRay((int)clicked.X, (int)clicked.Y, viewport, View * Projection));
-      var currentRay = new RayWrap(Ray.GetPickRay((int)mouse.Position.X, (int)mouse.Position.Y, viewport, View * Projection));
+          CameraRay = new RayWrap(Ray.GetPickRay((int)clicked.X, (int)clicked.Y, Viewport, View * Projection));
+      var currentRay = new RayWrap(Ray.GetPickRay((int)mouse.Position.X, (int)mouse.Position.Y, Viewport, View * Projection));
           device.Font.DrawString("mouse: " + CameraRay.From, 0, 30);
           device.Font.DrawString("mouseto: " + CameraRay.To, 0, 60);
           debug.vdb_label("model");
@@ -96,10 +95,12 @@ namespace Platform
             debug.Send(hits[j].HitPosition.DebugStr());
             device.Font.DrawString("hit: " + hits[j].Info, 0, 90 + 30 * j);
           }
-        axis.OnClicked(mouse,currentRay);
-
-          //flush text to view
-          device.Font.End();
+          axis.OnClicked(mouse,currentRay);
+#if DEBUGLINE
+      line.OnClicked(mouse, currentRay);
+#endif
+      //flush text to view
+      device.Font.End();
 #endif
     }
     static void PreViewUpdate(SharpDevice device)
@@ -137,7 +138,6 @@ namespace Platform
       Form.MouseClick += Form_MouseClick;
       Form.MouseMove += Form_MouseMove;
       Form.MouseWheel += Form_MouseWheel;
-      axis = new DraggableAxis("axis/axis.csv");
       debug = new VDBDebugger();
 #endregion
       using (SharpDevice device = new SharpDevice(Form))
@@ -165,6 +165,10 @@ namespace Platform
 #endif
         model.LoadTexture(device);
         axis.LoadTexture(device);
+#if DEBUGLINE
+        line.LoadTexture(device);
+        line.AfterLoaded();
+#endif
 #if CUBE
 
         //second pass
@@ -190,7 +194,8 @@ namespace Platform
         //init frame counter
         FpsCounter.Reset();
         device.SetBlend(BlendOperation.Add, BlendOption.SourceAlpha, BlendOption.InverseSourceAlpha);
-
+        var viewports = device.DeviceContext.Rasterizer.GetViewports<ViewportF>();
+        Viewport = viewports[0];
 
         //main loop
         RenderLoop.Run(Form, () =>
@@ -307,6 +312,9 @@ namespace Platform
           //apply shader
           model.Update(device, View * Projection);
           axis.Update(device, View * Projection);
+#if DEBUGLINE
+          line.Update(device, View * Projection);
+#endif
           model.ToSphere(axis.Position);
 #endif
 #if CUBE
@@ -392,6 +400,9 @@ namespace Platform
 #endif
         model.Dispose();
         axis.Dispose();
+#if DEBUGLINE
+        line.Dispose();
+#endif
 #if CUBE
         reflection.Dispose();
 
@@ -411,9 +422,7 @@ namespace Platform
     {
       var form = Form;
       Vector2 screenPos = new Vector2(e.X, e.Y);
-      var startRay = CordUtil.ScreenToWorld(screenPos, 0, new Vector2(form.Size.Width, form.Size.Height), View, Projection);
-
-      var viewport = new ViewportF(0, 0, form.Size.Width, form.Size.Height);
+      var startRay = new RayWrap(Ray.GetPickRay( e.X, e.Y, Viewport, View * Projection));
       mouse.IsMoved = true;
       mouse.Clicked = e.Button == MouseButtons.Left;
       mouse.RightClicked = e.Button == MouseButtons.Right;
@@ -427,7 +436,7 @@ namespace Platform
 
       }
       mouse.Position = screenPos;
-      mouse.WorldPosition = startRay;
+      mouse.WorldPosition = startRay.To;
       //System.Diagnostics.Debug.WriteLine(startRay + " start");
       //System.Diagnostics.Debug.WriteLine(mouse.LastClickedWorldPos + " last");
       mouse.OnMouseMove(e);
