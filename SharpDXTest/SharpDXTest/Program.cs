@@ -137,7 +137,7 @@ namespace Platform
       Form.MouseClick += Form_MouseClick;
       Form.MouseMove += Form_MouseMove;
       Form.MouseWheel += Form_MouseWheel;
-      axis = new DraggableAxis("axis/axisHead.csv");
+      axis = new DraggableAxis("axis/axis.csv");
       debug = new VDBDebugger();
 #endregion
       using (SharpDevice device = new SharpDevice(Form))
@@ -210,7 +210,7 @@ namespace Platform
           //set transformation matrix
           float ratio = (float)Form.ClientRectangle.Width / (float)Form.ClientRectangle.Height;
           //90° degree with 1 ratio
-          Projection = Matrix.PerspectiveFovLH(3.14F / 2.0F, 1, 1F, 10000.0F);
+          Projection = Camera.Projection;
 
           //camera
 #if false
@@ -316,7 +316,7 @@ namespace Platform
           device.DeviceContext.PixelShader.SetShaderResource(1, cubeTarget.Resource);
 
 
-          Projection = Matrix.PerspectiveFovLH(3.14F / 3.0F, ratio, 1, 10000.0F);
+          Projection = Camera.Projection;
           sceneInformation = new Data()
           {
             world = world,

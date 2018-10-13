@@ -102,7 +102,6 @@ namespace SharpDXTest
     Vector3 PosLocal = new Vector3(0, 30, 70);
     Vector3 To = new Vector3(0, 0, 0);
 
-    Matrix projection = Matrix.PerspectiveFovLH(3.14F / 2.0F, 1, 1F, 10000.0F);
     Matrix CamAtt = Matrix.Identity;
 
     Vector3 MoveDir;
@@ -269,15 +268,6 @@ CamPos += Offset_Z * (*CamZAxis);
     {
       return (float)Math.Acos(f);
     }
-  }
-
-  public static class Util
-  {
-    public const float ZeroTolerancef = 1e-06f;
-    public static void ArrayFullCopy(this Array array , Array target)
-    {
-      Array.Copy(array, target, array.Length);
-    }
 
     public static float Abs(this float f)
     {
@@ -292,6 +282,29 @@ CamPos += Offset_Z * (*CamZAxis);
     {
       return f / (float)Math.PI * 180.0f;
     }
+
+    public static float AddDeg(this float deg,float delta)
+    {
+      float added = deg + delta;
+      if(added < 0)
+      {
+        added = -added;
+        return 360.0f - added % 360.0f;
+      }
+      return added % 360.0f;
+    }
+
+  }
+
+  public static class Util
+  {
+    public const float ZeroTolerancef = 1e-06f;
+    public static void ArrayFullCopy(this Array array , Array target)
+    {
+      Array.Copy(array, target, array.Length);
+    }
+
+
 
     public static bool IsNearlyEqual(this float v,float other , float eps = float.Epsilon)
     {

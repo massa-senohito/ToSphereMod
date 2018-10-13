@@ -56,6 +56,14 @@ public class TrackBallCamera
   {
     return View;
   }
+
+  static float FOV = 30;
+  public Matrix Projection
+  {
+    get;
+    private set;
+  }
+
   private Vector2? lastMousePosition;
   // Use this for initialization
 
@@ -66,6 +74,7 @@ public class TrackBallCamera
     var dist = Vector3.Distance(Position, Target);
     distance = dist;
     View = Matrix.LookAtLH(pos, target, Vector3.UnitY);
+    Projection = Matrix.PerspectiveFovLH(FOV.Rad(), 1, 1F, 10000.0F);
     debug = new VDBDebugger();
   }
 
@@ -111,26 +120,6 @@ public class TrackBallCamera
 
     Vector3.Add(ref vec, ref temp, out result);
 
-  }
-  public static Vector3 opA(Quaternion rotation, Vector3 point)
-  {
-    float num = rotation.X * 2f;
-    float num2 = rotation.Y * 2f;
-    float num3 = rotation.Z * 2f;
-    float num4 = rotation.X * num;
-    float num5 = rotation.Y * num2;
-    float num6 = rotation.Z * num3;
-    float num7 = rotation.X * num2;
-    float num8 = rotation.X * num3;
-    float num9 = rotation.Y * num3;
-    float num10 = rotation.W * num;
-    float num11 = rotation.W * num2;
-    float num12 = rotation.W * num3;
-    Vector3 result = new Vector3();
-    result.X = (1f - (num5 + num6)) * point.X + (num7 - num12) * point.Y + (num8 + num11) * point.Z;
-    result.Y = (num7 + num12) * point.X + (1f - (num4 + num6)) * point.Y + (num9 - num10) * point.Z;
-    result.Z = (num8 - num11) * point.X + (num9 + num10) * point.Y + (1f - (num4 + num5)) * point.Z;
-    return result;
   }
 
   void SetPosition(Vector3 pos)
@@ -197,17 +186,14 @@ public class TrackBallCamera
     if (mouse.WheelDelta != 0)
     {
       distance -= mouse.WheelDelta;
-      UpdatePosition();
+      UpdatePosition(mouse);
     }
     // ボタンが押されていないと lastMousePosition = nullになる
     if (mouseBtn)
     {
       if (lastMousePosition.HasValue)
       {
-
-        var rotation = FigureOutAxisAngleRotation(mouse);
-        UpdatePosition(rotation);
-
+        UpdatePosition(mouse);
         lastMousePosition = mousePosn;
       }
       else
@@ -221,34 +207,27 @@ public class TrackBallCamera
     }
   }
 
-  private void UpdatePosition(Quaternion rotation = new Quaternion())
+  private void UpdatePosition(Mouse mouse)
   {
-    var toword = TowardTarget();
-    var vecPos = toword * -distance;
-
-    var translationVector = opA(rotation, vecPos); //(Transform(vecPos, rotation) );
-
-    SetPosition(translationVector + Target);
-          //CartesianPos(mouse);
-    Vector3 up = Vector3.Up;//tDir.Dot(Vector3.Up) < 0 ? Vector3.Down :Vector3.Up ;
+    SetPosition(CartesianPos(mouse) + Target);
+    Vector3 up = Vector3.Up;
 
     View = Matrix.LookAtLH(Position, Target, up);
   }
 
-  float Theta;
-  float Phi;
+  float Theta = 180;
+  float Phi = 284;
   Vector3 CartesianPos(Mouse mouse)
   {
 
-    Theta += mouse.Delta.X;
-    Phi += mouse.Delta.Y;
-    var t = Ma.ASin(0.2f);
-    var p = 0;
+    Theta = Theta.AddDeg( mouse.Delta.X);
+    Phi =  Phi.AddDeg(mouse.Delta.Y);
+    var t = Theta.Rad();
+    var p = Phi.Rad();
     var x = distance * Ma.Sin(p) * Ma.Sin(t);
     var y = distance * Ma.Cos(p);
     var z = distance * Ma.Sin(p) * Ma.Cos(t);
     var temp = new Vector3(x, y, z);
-    Console.WriteLine(temp);
     return temp;
   }
 
