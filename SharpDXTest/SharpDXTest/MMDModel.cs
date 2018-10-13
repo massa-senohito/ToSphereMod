@@ -71,6 +71,10 @@ namespace SharpDXTest
     public Face[] Faces;
     public IEnumerable<Material> Materials;
     SphereCast Cast;
+    public string DirPath
+    {
+      get;
+    }
 
     SharpMesh GetSharpMesh(SharpDevice device)
     {
@@ -90,7 +94,8 @@ namespace SharpDXTest
         };
       if(item.TexName != string.Empty)
       {
-          subSet.DiffuseMap = device.LoadTextureFromFile(item.TexName);
+          string filename = DirPath + Path.DirectorySeparatorChar + item.TexName;
+          subSet.DiffuseMap = device.LoadTextureFromFile(filename);
 
       }
         mesh.SubSets.Add(subSet);
@@ -121,6 +126,7 @@ namespace SharpDXTest
 
     public MMDModel(string path)
     {
+      DirPath = Directory.GetParent(path).FullName;
       var lines = File.ReadAllLines(path);
       var gr = lines.GroupBy(l => l.Split(',')[0]);
       var gs = gr.Where(g => !g.Key.Contains(";")).ToDictionary(s=>s.Key,g=>g.ToList());

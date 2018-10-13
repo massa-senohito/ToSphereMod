@@ -37,7 +37,7 @@ namespace Platform
       public Matrix mat6;
     }
 
-    static MMDModel model = new MMDModel(@"../../mikuCSV.csv");
+    static MMDModel model = new MMDModel(@"miku/mikuCSV.csv");
     static DraggableAxis axis ;
     static Vector2 clicked = Vector2.Zero;
     static RayWrap CameraRay;
