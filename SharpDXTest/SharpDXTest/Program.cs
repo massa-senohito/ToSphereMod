@@ -112,6 +112,7 @@ namespace Platform
       Form.MouseClick += Form_MouseClick;
       Form.MouseMove += Form_MouseMove;
       Form.MouseWheel += Form_MouseWheel;
+      Form.KeyUp += Form_KeyUp; ;
       debug = new VDBDebugger();
 #endregion
       using (SharpDevice device = new SharpDevice(Form))
@@ -130,68 +131,7 @@ namespace Platform
         OnResizeForm((float)Form.ClientRectangle.Width / Form.ClientRectangle.Height, device);
 
         //main loop
-        RenderLoop.Run(Form, () =>
-        {
-          //set transformation matrix
-          float ratio = (float)Form.ClientRectangle.Width / Form.ClientRectangle.Height;
-          //90° degree with 1 ratio
-          Projection = Camera.Projection;
-          //Resizing
-          if (device.MustResize)
-          {
-            device.Resize();
-            OnResizeForm(ratio, device);
-
-          }
-
-          //apply states
-          device.UpdateAllStates();
-          PreViewUpdate(device);
-
-          //MATRICES
-
-          //camera
-
-          View = Camera.GetView();
-          //View = Matrix.LookAtLH(new Vector3(0, 30, 70), new Vector3(0, 0, 0), Vector3.UnitY);
-          Camera.Update(mouse,FpsCounter.Delta*0.001f);
-          mouse.Update();
-          Vector3 from = Camera.Position;
-          if (!float.IsNaN(from.X))
-          {
-            debug.vdb_label("campos");
-            debug.Send(from.DebugStr());
-          }
-
-          Matrix world = Matrix.Translation(0, 0, 50) * Matrix.RotationY(Environment.TickCount / 1000.0F);
-
-          //light direction
-          Vector3 lightDirection = new Vector3(0.5f, 0, -1);
-          lightDirection.Normalize();
-
-          //RENDERING TO DEVICE
-
-          //Set original targets
-          device.SetDefaultTargers();
-
-          //clear color
-          device.Clear(Color.Brown);
-
-          //apply shader
-          model.Update(device, View * Projection);
-          axis.Update(device, View * Projection);
-#if DEBUGLINE
-          line.Update(device, View * Projection);
-#endif
-          model.ToSphere(axis.Position);
-
-          PostViewUpdate(device);
-
-          //present
-          device.Present();
-
-        });
-
+        RenderLoop.Run(Form, () => OnUpdate(device) );
 
         //release resource
 
@@ -201,9 +141,74 @@ namespace Platform
         line.Dispose();
 #endif
 
+      }
+    }
 
+    private static void Form_KeyUp(object sender, KeyEventArgs e)
+    {
+      Util.DebugWrite( e.KeyData.ToString() );
+    }
+
+    private static void OnUpdate(SharpDevice device)
+    {
+      //set transformation matrix
+      float ratio = (float)Form.ClientRectangle.Width / Form.ClientRectangle.Height;
+      //90° degree with 1 ratio
+      Projection = Camera.Projection;
+      //Resizing
+      if (device.MustResize)
+      {
+        device.Resize();
+        OnResizeForm(ratio, device);
 
       }
+
+      //apply states
+      device.UpdateAllStates();
+      PreViewUpdate(device);
+
+      //MATRICES
+
+      //camera
+
+      View = Camera.GetView();
+      //View = Matrix.LookAtLH(new Vector3(0, 30, 70), new Vector3(0, 0, 0), Vector3.UnitY);
+      Camera.Update(mouse, FpsCounter.Delta * 0.001f);
+      mouse.Update();
+      Vector3 from = Camera.Position;
+      if (!float.IsNaN(from.X))
+      {
+        debug.vdb_label("campos");
+        debug.Send(from.DebugStr());
+      }
+
+      Matrix world = Matrix.Translation(0, 0, 50) * Matrix.RotationY(Environment.TickCount / 1000.0F);
+
+      //light direction
+      Vector3 lightDirection = new Vector3(0.5f, 0, -1);
+      lightDirection.Normalize();
+
+      //RENDERING TO DEVICE
+
+      //Set original targets
+      device.SetDefaultTargers();
+
+      //clear color
+      device.Clear(Color.Brown);
+
+      //apply shader
+      model.Update(device, View * Projection);
+      axis.Update(device, View * Projection);
+#if DEBUGLINE
+          line.Update(device, View * Projection);
+#endif
+      model.ToSphere(axis.Position);
+
+      PostViewUpdate(device);
+
+      //present
+      device.Present();
+
     }
 
     private static void Form_MouseWheel(object sender, MouseEventArgs e)

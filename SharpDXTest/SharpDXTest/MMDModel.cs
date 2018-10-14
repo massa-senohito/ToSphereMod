@@ -32,6 +32,17 @@ namespace SharpDXTest
       TexName = csv[26];
       TexName = TexName.Replace("\"", "");
     }
+//      Pmx.Material[0].Faces[0].Vertex1.Position
+
+    // PMXEditorから持って来る用
+    public Material(string name , string texName , IEnumerable<Vert> vertice , IEnumerable<int[]> faces )
+    {
+      Name = name;
+      TexName = texName;
+      Vertice = vertice;
+      Faces = faces;
+      FlattenFace = Faces.SelectMany(x => x).ToArray();
+    }
 
     private IEnumerable<Vert> GetVertex(Vert[] vert)
     {
@@ -150,6 +161,17 @@ namespace SharpDXTest
       var faceGr = gs["Face"].GroupBy(s => s.Split(',')[1]).ToDictionary(s=>s.Key,g=>g.ToList());
       Materials = Material.MakeFromCSV(gs["Material"], faceGr , Vertice );
 
+      GpuData = new GPUData() ;
+      GpuData.Alpha = 1;
+      Cast = new SphereCast(Matrix.Zero);
+    }
+
+    public MMDModel(Vert[] vertex , IEnumerable<Material> material)
+    {
+      Vertice = vertex;
+      OrigVertice = new Vert[Vertice.Length];
+      Vertice.ArrayFullCopy(OrigVertice);
+      Materials = material;
       GpuData = new GPUData() ;
       GpuData.Alpha = 1;
       Cast = new SphereCast(Matrix.Zero);
