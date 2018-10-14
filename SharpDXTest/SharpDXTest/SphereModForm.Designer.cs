@@ -40,9 +40,12 @@
       this.BoneBox = new System.Windows.Forms.TextBox();
       this.FactorBar = new System.Windows.Forms.TrackBar();
       this.RadiusBar = new System.Windows.Forms.TrackBar();
+      this.UIAlphaBar = new System.Windows.Forms.TrackBar();
+      this.UIAlpha = new System.Windows.Forms.Label();
       this.menuStrip1.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.FactorBar)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.RadiusBar)).BeginInit();
+      ((System.ComponentModel.ISupportInitialize)(this.UIAlphaBar)).BeginInit();
       this.SuspendLayout();
       // 
       // menuStrip1
@@ -110,7 +113,7 @@
       // 
       // OffsetBox
       // 
-      this.OffsetBox.Location = new System.Drawing.Point(65, 250);
+      this.OffsetBox.Location = new System.Drawing.Point(171, 286);
       this.OffsetBox.Name = "OffsetBox";
       this.OffsetBox.Size = new System.Drawing.Size(100, 19);
       this.OffsetBox.TabIndex = 6;
@@ -140,11 +143,30 @@
       this.RadiusBar.Size = new System.Drawing.Size(104, 45);
       this.RadiusBar.TabIndex = 9;
       // 
+      // UIAlphaBar
+      // 
+      this.UIAlphaBar.Location = new System.Drawing.Point(65, 212);
+      this.UIAlphaBar.Maximum = 100;
+      this.UIAlphaBar.Name = "UIAlphaBar";
+      this.UIAlphaBar.Size = new System.Drawing.Size(104, 45);
+      this.UIAlphaBar.TabIndex = 10;
+      // 
+      // UIAlpha
+      // 
+      this.UIAlpha.AutoSize = true;
+      this.UIAlpha.Location = new System.Drawing.Point(13, 212);
+      this.UIAlpha.Name = "UIAlpha";
+      this.UIAlpha.Size = new System.Drawing.Size(45, 12);
+      this.UIAlpha.TabIndex = 11;
+      this.UIAlpha.Text = "UIAlpha";
+      // 
       // SphereModForm
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.ClientSize = new System.Drawing.Size(284, 330);
+      this.Controls.Add(this.UIAlpha);
+      this.Controls.Add(this.UIAlphaBar);
       this.Controls.Add(this.RadiusBar);
       this.Controls.Add(this.FactorBar);
       this.Controls.Add(this.BoneBox);
@@ -161,6 +183,7 @@
       this.menuStrip1.PerformLayout();
       ((System.ComponentModel.ISupportInitialize)(this.FactorBar)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.RadiusBar)).EndInit();
+      ((System.ComponentModel.ISupportInitialize)(this.UIAlphaBar)).EndInit();
       this.ResumeLayout(false);
       this.PerformLayout();
 
@@ -179,5 +202,7 @@
     private System.Windows.Forms.TextBox BoneBox;
     private System.Windows.Forms.TrackBar FactorBar;
     private System.Windows.Forms.TrackBar RadiusBar;
+    private System.Windows.Forms.TrackBar UIAlphaBar;
+    private System.Windows.Forms.Label UIAlpha;
   }
 }

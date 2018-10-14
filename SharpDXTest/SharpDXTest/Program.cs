@@ -106,6 +106,7 @@ namespace Platform
       ModForm.Show();
       ModForm.SetFactorBoxChanged( OnFactorTextChanged );
       ModForm.SetRadiusBoxChanged( OnFactorTextChanged );
+      ModForm.SetAlphaBarChanged( OnAlphaBarChanged );
       //frame rate counter
 #region 
       Form.MouseClick += Form_MouseClick;
@@ -226,6 +227,10 @@ namespace Platform
     {
       model.OnFactorChanged(ModForm.Factor);
       model.OnRadiusChanged(ModForm.Radius);
+    }
+    private static void OnAlphaBarChanged(object sender,EventArgs e)
+    {
+      axis.Alpha = ModForm.Alpha;
     }
   }
 }

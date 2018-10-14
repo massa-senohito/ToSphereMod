@@ -150,6 +150,8 @@ namespace SharpDXTest
       var faceGr = gs["Face"].GroupBy(s => s.Split(',')[1]).ToDictionary(s=>s.Key,g=>g.ToList());
       Materials = Material.MakeFromCSV(gs["Material"], faceGr , Vertice );
 
+      GpuData = new GPUData() ;
+      GpuData.Alpha = 1;
       Cast = new SphereCast(Matrix.Zero);
     }
 
@@ -222,6 +224,18 @@ namespace SharpDXTest
       }
     }
 
+    public float Alpha
+    {
+      get
+      {
+        return GpuData.Alpha;
+      }
+      set
+      {
+        GpuData.Alpha = value;
+      }
+    }
+
     public void Update(SharpDevice device, Matrix ViewProjection)
     {
       //apply shader
@@ -231,8 +245,7 @@ namespace SharpDXTest
       VertexShader.SetConstantBuffer(0, GPUDataBuffer);
       PixelShader.SetConstantBuffer(0, GPUDataBuffer);
       var worldViewProjection = World * ViewProjection;
-      GpuData = new GPUData() { WorldViewProjection = worldViewProjection };
-      GpuData.Alpha = 0.5f;
+      GpuData.WorldViewProjection = worldViewProjection;
       device.UpdateData(GPUDataBuffer, GpuData);
       Mesh.Begin();
       for (int i = 0; i < Mesh.SubSets.Count; i++)

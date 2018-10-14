@@ -24,6 +24,7 @@ namespace BlenderModifier
       FactorBar.Value = 30;
       RadiusBar.ValueChanged += RadiusBar_ValueChanged;
       RadiusBar.Value = 200;
+      UIAlphaBar.Value = 100;
     }
 
     private void RadiusBar_ValueChanged(object sender, EventArgs e)
@@ -49,6 +50,11 @@ namespace BlenderModifier
     public void SetOffsetBoxChanged(EventHandler f)
     {
       OffsetBox.TextChanged += f;
+    }
+
+    public void SetAlphaBarChanged(EventHandler f)
+    {
+      UIAlphaBar.ValueChanged += f;
     }
 
     public V3 GetOffset()
@@ -95,6 +101,15 @@ namespace BlenderModifier
       private set
       {
         RadiusBox.Text = value.ToString();
+      }
+    }
+
+    public float Alpha
+    {
+      get
+      {
+        var v = UIAlphaBar.Value;
+        return v * 0.01f;
       }
     }
 

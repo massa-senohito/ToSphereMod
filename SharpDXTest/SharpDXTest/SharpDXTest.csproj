@@ -90,6 +90,7 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+    <None Include="Properties\DataSources\GPUData.datasource" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="SharpHelper\SharpHelper.csproj">
