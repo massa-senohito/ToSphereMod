@@ -28,7 +28,6 @@
     /// </summary>
     private void InitializeComponent()
     {
-      this.textBox1 = new System.Windows.Forms.TextBox();
       this.menuStrip1 = new System.Windows.Forms.MenuStrip();
       this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
       this.loadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -39,16 +38,12 @@
       this.RadiusBox = new System.Windows.Forms.TextBox();
       this.OffsetBox = new System.Windows.Forms.TextBox();
       this.BoneBox = new System.Windows.Forms.TextBox();
+      this.FactorBar = new System.Windows.Forms.TrackBar();
+      this.RadiusBar = new System.Windows.Forms.TrackBar();
       this.menuStrip1.SuspendLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.FactorBar)).BeginInit();
+      ((System.ComponentModel.ISupportInitialize)(this.RadiusBar)).BeginInit();
       this.SuspendLayout();
-      // 
-      // textBox1
-      // 
-      this.textBox1.Location = new System.Drawing.Point(12, 203);
-      this.textBox1.Multiline = true;
-      this.textBox1.Name = "textBox1";
-      this.textBox1.Size = new System.Drawing.Size(259, 90);
-      this.textBox1.TabIndex = 0;
       // 
       // menuStrip1
       // 
@@ -100,7 +95,7 @@
       // label2
       // 
       this.label2.AutoSize = true;
-      this.label2.Location = new System.Drawing.Point(12, 59);
+      this.label2.Location = new System.Drawing.Point(12, 128);
       this.label2.Name = "label2";
       this.label2.Size = new System.Drawing.Size(40, 12);
       this.label2.TabIndex = 5;
@@ -108,14 +103,14 @@
       // 
       // RadiusBox
       // 
-      this.RadiusBox.Location = new System.Drawing.Point(65, 56);
+      this.RadiusBox.Location = new System.Drawing.Point(65, 125);
       this.RadiusBox.Name = "RadiusBox";
       this.RadiusBox.Size = new System.Drawing.Size(100, 19);
       this.RadiusBox.TabIndex = 4;
       // 
       // OffsetBox
       // 
-      this.OffsetBox.Location = new System.Drawing.Point(65, 82);
+      this.OffsetBox.Location = new System.Drawing.Point(65, 250);
       this.OffsetBox.Name = "OffsetBox";
       this.OffsetBox.Size = new System.Drawing.Size(100, 19);
       this.OffsetBox.TabIndex = 6;
@@ -123,38 +118,55 @@
       // 
       // BoneBox
       // 
-      this.BoneBox.Location = new System.Drawing.Point(65, 118);
+      this.BoneBox.Location = new System.Drawing.Point(65, 286);
       this.BoneBox.Name = "BoneBox";
       this.BoneBox.Size = new System.Drawing.Size(100, 19);
       this.BoneBox.TabIndex = 7;
       this.BoneBox.Text = "0";
+      // 
+      // FactorBar
+      // 
+      this.FactorBar.Location = new System.Drawing.Point(65, 56);
+      this.FactorBar.Maximum = 100;
+      this.FactorBar.Name = "FactorBar";
+      this.FactorBar.Size = new System.Drawing.Size(104, 45);
+      this.FactorBar.TabIndex = 8;
+      // 
+      // RadiusBar
+      // 
+      this.RadiusBar.Location = new System.Drawing.Point(65, 150);
+      this.RadiusBar.Maximum = 1000;
+      this.RadiusBar.Name = "RadiusBar";
+      this.RadiusBar.Size = new System.Drawing.Size(104, 45);
+      this.RadiusBar.TabIndex = 9;
       // 
       // SphereModForm
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.ClientSize = new System.Drawing.Size(284, 330);
+      this.Controls.Add(this.RadiusBar);
+      this.Controls.Add(this.FactorBar);
       this.Controls.Add(this.BoneBox);
       this.Controls.Add(this.OffsetBox);
       this.Controls.Add(this.label2);
       this.Controls.Add(this.RadiusBox);
       this.Controls.Add(this.label1);
       this.Controls.Add(this.FactorBox);
-      this.Controls.Add(this.textBox1);
       this.Controls.Add(this.menuStrip1);
       this.MainMenuStrip = this.menuStrip1;
       this.Name = "SphereModForm";
       this.Text = "SphereModForm";
       this.menuStrip1.ResumeLayout(false);
       this.menuStrip1.PerformLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.FactorBar)).EndInit();
+      ((System.ComponentModel.ISupportInitialize)(this.RadiusBar)).EndInit();
       this.ResumeLayout(false);
       this.PerformLayout();
 
     }
 
     #endregion
-
-    private System.Windows.Forms.TextBox textBox1;
     private System.Windows.Forms.MenuStrip menuStrip1;
     private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
     private System.Windows.Forms.ToolStripMenuItem loadToolStripMenuItem;
@@ -165,5 +177,7 @@
     private System.Windows.Forms.TextBox RadiusBox;
     private System.Windows.Forms.TextBox OffsetBox;
     private System.Windows.Forms.TextBox BoneBox;
+    private System.Windows.Forms.TrackBar FactorBar;
+    private System.Windows.Forms.TrackBar RadiusBar;
   }
 }

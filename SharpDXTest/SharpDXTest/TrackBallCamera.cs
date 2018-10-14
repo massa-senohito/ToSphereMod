@@ -11,9 +11,11 @@ public class Mouse
     get;
     private set;
   }
+
   public Vector2 Position
   {
     get;
+
     private set;
   }
   public Vector2 LastPosition
@@ -21,12 +23,20 @@ public class Mouse
     get;
     private set;
   }
+
   public bool Clicked
   {
     get;
     private set;
   }
+
   public bool RightClicked
+  {
+    get;
+    private set;
+  }
+
+  public bool MiddleClicked
   {
     get;
     private set;
@@ -37,11 +47,13 @@ public class Mouse
     get;
     private set;
   }
+
   public Vector3 LastClickedWorldPos
   {
     get;
     private set;
   }
+
   public Vector2 Delta
   {
     get;
@@ -65,6 +77,7 @@ public class Mouse
       IsMoved = true;
       Clicked = e.Button == MouseButtons.Left;
       RightClicked = e.Button == MouseButtons.Right;
+    MiddleClicked = e.Button == MouseButtons.Middle;
       if (Clicked)
       {
         LastClickedPos = Position;
@@ -79,6 +92,7 @@ public class Mouse
       WorldPosition = startRay.To;
     WheelDelta = Math.Sign(e.Delta);
   }
+
   public void Update()
   {
     //WorldPosition = wpos;
@@ -88,8 +102,14 @@ public class Mouse
     WheelDelta = 0;
   }
 }
+
 public class TrackBallCamera
 {
+  Matrix LookAt( Vector3 up)
+  {
+    return
+      Matrix.LookAtLH(Position, Target, up);
+  }
 
   public float distance = 15f;
   VDBDebugger debug;
@@ -120,14 +140,9 @@ public class TrackBallCamera
     var dist = Vector3.Distance(Position, Target);
     distance = dist;
     View = Matrix.LookAtLH(pos, target, Vector3.UnitY);
-    Projection = Matrix.PerspectiveFovLH(FOV.Rad(), 1, 1F, 10000.0F);
     debug = new VDBDebugger();
   }
 
-  void Start()
-  {
-
-  }
   public static Vector3 Transform(Vector3 vec, Quaternion quat)
 
   {
@@ -170,6 +185,7 @@ public class TrackBallCamera
     Forward = Target - Position;
     Forward.Normalize();
   }
+
   Vector3 TowardTarget()
   {
     var lastPosn = Position;
@@ -178,7 +194,12 @@ public class TrackBallCamera
     vecPos.Normalize();
     return vecPos;
   }
-  
+
+  public void OnResize(float ratio)
+  {
+    Projection = Matrix.PerspectiveFovLH(FOV.Rad(), ratio, 0.3F, 1000.0F);
+  }
+
   public void Update(Mouse mouse, float delta)
   {
 
@@ -187,14 +208,14 @@ public class TrackBallCamera
     if (mouse.WheelDelta != 0)
     {
       distance -= mouse.WheelDelta;
-      UpdatePosition(mouse);
+      UpdateRotation(mouse);
     }
     // ボタンが押されていないと lastMousePosition = nullになる
     if (mouseBtn)
     {
       if (lastMousePosition.HasValue)
       {
-        UpdatePosition(mouse);
+        UpdateRotation(mouse);
         lastMousePosition = mousePosn;
       }
       else
@@ -206,14 +227,30 @@ public class TrackBallCamera
     {
       lastMousePosition = null;
     }
+    if(mouse.MiddleClicked)
+    {
+      var mouseDelta = new Vector3(mouse.Delta.X , mouse.Delta.Y , 0) * 0.01f;
+      var xVec = View.Left * mouseDelta.X;
+      var yVec = View.Up * mouseDelta.Y;
+      var movVec = xVec + yVec;
+      // なんか前後逆なので
+      movVec.Z = -movVec.Z;
+      Position += movVec;
+      Target += movVec;
+      SetPosition(Position);
+
+      Vector3 up = Vector3.Up;
+      View = LookAt( up);
+    }
+
   }
 
-  private void UpdatePosition(Mouse mouse)
+  private void UpdateRotation(Mouse mouse)
   {
     SetPosition(CartesianPos(mouse) + Target);
     Vector3 up = Vector3.Up;
 
-    View = Matrix.LookAtLH(Position, Target, up);
+    View = LookAt(up);
   }
 
   float Theta = 180;

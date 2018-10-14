@@ -46,6 +46,8 @@ namespace SharpHelper
         }
         public void SetOnly<VType>( VType[] vertices, int[] indices) where VType : struct
         {
+      VertexBuffer?.Dispose();
+      IndexBuffer?.Dispose();
             VertexBuffer = Buffer11.Create<VType>(Device.Device, BindFlags.VertexBuffer, vertices);
             IndexBuffer = Buffer11.Create(Device.Device, BindFlags.IndexBuffer, indices);
             VertexSize = SharpDX.Utilities.SizeOf<VType>();

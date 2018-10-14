@@ -20,6 +20,20 @@ namespace BlenderModifier
       InitializeComponent();
       FactorBox.Text = "0.3";
       RadiusBox.Text = "2";
+      FactorBar.ValueChanged += FactorBar_ValueChanged;
+      FactorBar.Value = 30;
+      RadiusBar.ValueChanged += RadiusBar_ValueChanged;
+      RadiusBar.Value = 200;
+    }
+
+    private void RadiusBar_ValueChanged(object sender, EventArgs e)
+    {
+      Radius = RadiusBar.Value * 0.01f; ;
+    }
+
+    private void FactorBar_ValueChanged(object sender, EventArgs e)
+    {
+      Factor = FactorBar.Value * 0.01f;
     }
 
     public void SetFactorBoxChanged(EventHandler f)
@@ -66,6 +80,10 @@ namespace BlenderModifier
         var success = float.TryParse(FactorBox.Text, out float result);
         return result;
       }
+      private set
+      {
+        FactorBox.Text = value.ToString();
+      }
     }
     public float Radius
     {
@@ -74,10 +92,10 @@ namespace BlenderModifier
         var success = float.TryParse(RadiusBox.Text, out float result);
         return result;
       }
-    }
-    public void AddDebug(string message)
-    {
-      textBox1.AppendText(message + "\n");
+      private set
+      {
+        RadiusBox.Text = value.ToString();
+      }
     }
 
     private void updateToolStripMenuItem_Click(object sender, EventArgs e)

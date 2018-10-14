@@ -56,6 +56,13 @@ namespace Platform
     static RenderForm Form;
     static BlenderModifier.SphereModForm ModForm = new BlenderModifier.SphereModForm();
 
+    static void OnResizeForm(float ratio, SharpDevice device)
+    {
+      var viewports = device.DeviceContext.Rasterizer.GetViewports<ViewportF>();
+      Viewport = viewports[0];
+      Camera.OnResize(ratio);
+    }
+
     static void PostViewUpdate(SharpDevice device)
     {
 #if FONT
@@ -103,10 +110,12 @@ namespace Platform
       device.Font.End();
 #endif
     }
+
     static void PreViewUpdate(SharpDevice device)
     {
 
     }
+
     /// <summary>
     /// The main entry point for the application.
     /// </summary>
@@ -194,16 +203,21 @@ namespace Platform
         //init frame counter
         FpsCounter.Reset();
         device.SetBlend(BlendOperation.Add, BlendOption.SourceAlpha, BlendOption.InverseSourceAlpha);
-        var viewports = device.DeviceContext.Rasterizer.GetViewports<ViewportF>();
-        Viewport = viewports[0];
+        OnResizeForm((float)Form.ClientRectangle.Width / Form.ClientRectangle.Height, device);
 
         //main loop
         RenderLoop.Run(Form, () =>
         {
+          //set transformation matrix
+          float ratio = (float)Form.ClientRectangle.Width / Form.ClientRectangle.Height;
+          //90° degree with 1 ratio
+          Projection = Camera.Projection;
           //Resizing
           if (device.MustResize)
           {
             device.Resize();
+            OnResizeForm(ratio, device);
+
           }
 
           //apply states
@@ -212,18 +226,10 @@ namespace Platform
 
           //MATRICES
 
-          //set transformation matrix
-          float ratio = (float)Form.ClientRectangle.Width / (float)Form.ClientRectangle.Height;
-          //90° degree with 1 ratio
-          Projection = Camera.Projection;
+
 
           //camera
-#if false
-          Vector3 from = new Vector3(0, 30, 70);
-          Vector3 to = new Vector3(0, 0, 0);
 
-          Matrix view = Matrix.LookAtLH(from, to, Vector3.UnitY);
-#else
           View = Camera.GetView();
           //View = Matrix.LookAtLH(new Vector3(0, 30, 70), new Vector3(0, 0, 0), Vector3.UnitY);
           Camera.Update(mouse,FpsCounter.Delta*0.001f);
@@ -235,7 +241,6 @@ namespace Platform
             debug.Send(from.DebugStr());
           }
 
-#endif
           Matrix world = Matrix.Translation(0, 0, 50) * Matrix.RotationY(Environment.TickCount / 1000.0F);
 
           //light direction
