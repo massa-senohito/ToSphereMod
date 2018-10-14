@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Vert = SharpHelper.TexturedVertex;
@@ -59,6 +60,17 @@ namespace SharpDXTest
       return Name + " : " + TexName;
     }
   }
+  [StructLayout(LayoutKind.Explicit)]
+  public struct GPUData
+  {
+    [FieldOffset(0)]
+    public Matrix WorldViewProjection;
+    [FieldOffset(64)]
+    public float Alpha;
+    [FieldOffset(128-4)]
+    public float NULL;
+  }
+
   public class MMDModel : System.IDisposable
   {
     public Vert[] Vertice;
@@ -92,6 +104,7 @@ namespace SharpDXTest
           IndexCount = faceCount,
           StartIndex = icount,
         };
+
       if(item.TexName != string.Empty)
       {
           string filename = DirPath + Path.DirectorySeparatorChar + item.TexName;
@@ -141,7 +154,8 @@ namespace SharpDXTest
     }
 
     protected SharpMesh Mesh;
-    Buffer Buffer;
+    Buffer GPUDataBuffer;
+    GPUData GpuData;
     SharpShader Shader;
     VertexShaderStage VertexShader;
     PixelShaderStage PixelShader;
@@ -158,7 +172,7 @@ namespace SharpDXTest
                         new InputElement("POSITION", 0, Format.R32G32B32_Float, 0, 0),
                         new InputElement("TEXCOORD", 0, Format.R32G32_Float, 12, 0)
           });
-      Buffer = Shader.CreateBuffer<Matrix>();
+      GPUDataBuffer = Shader.CreateBuffer<GPUData>();
       VertexShader = device.DeviceContext.VertexShader;
       PixelShader = device.DeviceContext.PixelShader;
 
@@ -214,9 +228,12 @@ namespace SharpDXTest
       Shader.Apply();
 
       //apply constant buffer to shader
-      VertexShader.SetConstantBuffer(0, Buffer);
+      VertexShader.SetConstantBuffer(0, GPUDataBuffer);
+      PixelShader.SetConstantBuffer(0, GPUDataBuffer);
       var worldViewProjection = World * ViewProjection;
-      device.UpdateData<Matrix>(Buffer, worldViewProjection);
+      GpuData = new GPUData() { WorldViewProjection = worldViewProjection };
+      GpuData.Alpha = 0.5f;
+      device.UpdateData(GPUDataBuffer, GpuData);
       Mesh.Begin();
       for (int i = 0; i < Mesh.SubSets.Count; i++)
       {
@@ -290,7 +307,7 @@ namespace SharpDXTest
           Mesh.Dispose();
           VertexShader.Dispose();
           PixelShader.Dispose();
-          Buffer.Dispose();
+          GPUDataBuffer.Dispose();
           Shader.Dispose();
         }
 

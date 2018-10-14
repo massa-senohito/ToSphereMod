@@ -2,6 +2,7 @@
 cbuffer data :register(b0)
 {
 	float4x4 worldViewProj;
+	float alpha;
 };
 
 struct VS_IN
@@ -37,5 +38,7 @@ PS_IN VS( VS_IN input)
 
 float4 PS( PS_IN input ) : SV_Target
 {
-	return textureMap.Sample( textureSampler, input.texcoord );
+	float4 sampled = textureMap.Sample( textureSampler, input.texcoord );
+	sampled.w *= alpha;
+	return sampled;
 }
