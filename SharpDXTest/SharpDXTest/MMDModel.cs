@@ -306,10 +306,15 @@ namespace SharpDXTest
       }
     }
 
-    public void ToSphere(Vector3 pos)
+    public void ToSphere(Vector3 pos , bool add = false)
     {
       Cast.Offset = pos;
-      var vs = OrigVertice.Select(v => v.Position).ToArray();
+
+      // ミラーの場合、元のモデルに対して変更を行うと上書きになってしまう
+      // 順序が生まれてしまうが、変更後に対して作用させる
+      var vs = add ?
+        Vertice.Select(v => v.Position).ToArray():
+        OrigVertice.Select(v => v.Position).ToArray();
       var vd = Cast.GetSpereUntilEnd(vs);
       for (int i = 0; i < vd.Length; i++)
       {

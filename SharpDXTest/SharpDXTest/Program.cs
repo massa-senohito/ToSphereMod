@@ -21,7 +21,7 @@ namespace Platform
   public static class Program
   {
 
-    static MMDModel model = new MMDModel(@"miku/mikuCSV.csv");
+    public static MMDModel Model;
     static DraggableAxis axis = new DraggableAxis("axis/axis.csv");
     static DebugLine line = new DebugLine("line/line.csv");
     static Vector2 clicked = Vector2.Zero;
@@ -86,39 +86,28 @@ namespace Platform
 
     }
 
-    /// <summary>
-    /// The main entry point for the application.
-    /// </summary>
-    [STAThread]
-    static void Main()
+    public static void NormalStart()
     {
-
-      if (!SharpDevice.IsDirectX11Supported())
-      {
-        System.Windows.Forms.MessageBox.Show("DirectX11 Not Supported");
-        return;
-      }
-
       //render form
       Form = new RenderForm();
       Form.Text = "Tutorial 16: Environment Mapping";
 
       ModForm.Show();
-      ModForm.SetFactorBoxChanged( OnFactorTextChanged );
-      ModForm.SetRadiusBoxChanged( OnFactorTextChanged );
-      ModForm.SetAlphaBarChanged( OnAlphaBarChanged );
+      ModForm.SetFactorBoxChanged(OnFactorTextChanged);
+      ModForm.SetRadiusBoxChanged(OnFactorTextChanged);
+      ModForm.SetAlphaBarChanged(OnAlphaBarChanged);
       //frame rate counter
-#region 
+      #region addEvent
       Form.MouseClick += Form_MouseClick;
       Form.MouseMove += Form_MouseMove;
       Form.MouseWheel += Form_MouseWheel;
       Form.KeyUp += Form_KeyUp; ;
       debug = new VDBDebugger();
-#endregion
+      #endregion
       using (SharpDevice device = new SharpDevice(Form))
       {
 
-        model.LoadTexture(device);
+        Model.LoadTexture(device);
         axis.LoadTexture(device);
 #if DEBUGLINE
         line.LoadTexture(device);
@@ -135,13 +124,33 @@ namespace Platform
 
         //release resource
 
-        model.Dispose();
+        Model.Dispose();
         axis.Dispose();
 #if DEBUGLINE
         line.Dispose();
 #endif
-
       }
+    }
+
+    /// <summary>
+    /// The main entry point for the application.
+    /// </summary>
+    [STAThread]
+    public static void Main(string[] args)
+    {
+
+      if (!SharpDevice.IsDirectX11Supported())
+      {
+        System.Windows.Forms.MessageBox.Show("DirectX11 Not Supported");
+        return;
+      }
+      if (args.Length == 0)
+      {
+        Model = new MMDModel(@"miku/mikuCSV.csv");
+        NormalStart();
+      }
+
+
     }
 
     private static void Form_KeyUp(object sender, KeyEventArgs e)
@@ -197,12 +206,13 @@ namespace Platform
       device.Clear(Color.Brown);
 
       //apply shader
-      model.Update(device, View * Projection);
+      Model.Update(device, View * Projection);
       axis.Update(device, View * Projection);
 #if DEBUGLINE
           line.Update(device, View * Projection);
 #endif
-      model.ToSphere(axis.Position);
+      Model.ToSphere(axis.Position);
+      Model.ToSphere(axis.Position.InvX() , true );
 
       PostViewUpdate(device);
 
@@ -230,8 +240,8 @@ namespace Platform
 
     private static void OnFactorTextChanged(object sender,EventArgs e)
     {
-      model.OnFactorChanged(ModForm.Factor);
-      model.OnRadiusChanged(ModForm.Radius);
+      Model.OnFactorChanged(ModForm.Factor);
+      Model.OnRadiusChanged(ModForm.Radius);
     }
     private static void OnAlphaBarChanged(object sender,EventArgs e)
     {

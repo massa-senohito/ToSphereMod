@@ -11,12 +11,18 @@ namespace SharpDXTest
 
   public static class CordUtil
   {
+    public static Vector3 InvX(this Vector3 v)
+    {
+      return new Vector3(-v.X, v.Y, v.Z);
+    }
+
     public static Vector2 Normal(this Vector2 v , Vector2 v2)
     {
       var temp = (v - v2);
       temp.Normalize();
       return new Vector2(-temp.Y , temp.X);
     }
+
     public static float Dot(this Vector3 v, Vector3 v2)
     {
       return Vector3.Dot(v, v2);
@@ -25,6 +31,7 @@ namespace SharpDXTest
     {
       return Vector3.Cross(v, v2);
     }
+
     public static Matrix TransMat(this Vector3 v)
     {
       return Matrix.Translation(v);
