@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{1AEF787F-B0ED-44B4-B091-6570888A91F7}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>MMDataIO</RootNamespace>
+    <AssemblyName>MMDataIO</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="SharpDX.Mathematics">
+      <HintPath>..\..\PMXAutoWeight\packages\SharpDX.Mathematics.4.2.0\lib\net40\SharpDX.Mathematics.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BinUtil.cs" />
+    <Compile Include="CloneUtil.cs" />
+    <Compile Include="Vmd\IKeyFrame.cs" />
+    <Compile Include="Vmd\VmdPropertyFrameData.cs" />
+    <Compile Include="Vmd\IVmdData.cs" />
+    <Compile Include="Vmd\VmdHeaderData.cs" />
+    <Compile Include="Vmd\VmdMorphFrameData.cs" />
+    <Compile Include="Vmd\VmdMotionData.cs" />
+    <Compile Include="Vmd\VmdMotionFrameData.cs" />
+    <Compile Include="Pmx\IPmxData.cs" />
+    <Compile Include="Pmx\IPmxMorphTypeData.cs" />
+    <Compile Include="Pmx\PmxBoneData.cs" />
+    <Compile Include="Pmx\PmxHeaderData.cs" />
+    <Compile Include="Pmx\PmxMaterialData.cs" />
+    <Compile Include="Pmx\PmxModelData.cs" />
+    <Compile Include="Pmx\PmxMorphData.cs" />
+    <Compile Include="Pmx\PmxSlotData.cs" />
+    <Compile Include="Pmx\PmxVertexData.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+</Project>
