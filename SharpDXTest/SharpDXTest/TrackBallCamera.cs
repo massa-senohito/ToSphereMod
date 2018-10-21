@@ -107,17 +107,23 @@ public class TrackBallCamera
 {
   Matrix LookAt( Vector3 up)
   {
+    var right = Forward.Cross(up);
+    right.Normalize();
+    var reculcUp = right.Cross(Forward);
+    reculcUp.Normalize();
     return
-      Matrix.LookAtLH(Position, Target, up);
+      //Matrix.LookAtLH(Position, Target, up);
+      Matrix.LookAtLH(Position, Target, reculcUp);
   }
 
-  public float distance = 15f;
+  public float Distance = 15f;
   VDBDebugger debug;
   public float Multi = 0.8f; // distance of the virtual trackball.
   public Vector3 Forward;
   public Vector3 Target;
   public Vector3 Position;
   public Matrix View;
+
   public Matrix GetView()
   {
     return View;
@@ -138,7 +144,7 @@ public class TrackBallCamera
     Target = target;
     Position = pos;
     var dist = Vector3.Distance(Position, Target);
-    distance = dist;
+    Distance = dist;
     View = Matrix.LookAtLH(pos, target, Vector3.UnitY);
     debug = new VDBDebugger();
   }
@@ -207,7 +213,8 @@ public class TrackBallCamera
     var mouseBtn = mouse.RightClicked;
     if (mouse.WheelDelta != 0)
     {
-      distance -= mouse.WheelDelta;
+      Distance -= mouse.WheelDelta;
+      Distance = Distance.Clamp(1, 200);
       UpdateRotation(mouse);
     }
     // ボタンが押されていないと lastMousePosition = nullになる
@@ -230,11 +237,11 @@ public class TrackBallCamera
     if(mouse.MiddleClicked)
     {
       var mouseDelta = new Vector3(mouse.Delta.X , mouse.Delta.Y , 0) * 0.01f;
-      var xVec = View.Left * mouseDelta.X;
-      var yVec = View.Up * mouseDelta.Y;
+      var right = Forward.Cross(Vector3.UnitY);
+      var reculcUp = right.Cross(Forward);
+      var xVec = right * mouseDelta.X;
+      var yVec = reculcUp * mouseDelta.Y;
       var movVec = xVec + yVec;
-      // なんか前後逆なので
-      movVec.Z = -movVec.Z;
       Position += movVec;
       Target += movVec;
       SetPosition(Position);
@@ -247,7 +254,7 @@ public class TrackBallCamera
 
   private void UpdateRotation(Mouse mouse)
   {
-    SetPosition(CartesianPos(mouse) + Target);
+    SetPosition(SphericalPos(mouse) + Target);
     Vector3 up = Vector3.Up;
 
     View = LookAt(up);
@@ -255,16 +262,17 @@ public class TrackBallCamera
 
   float Theta = 180;
   float Phi = 284;
-  Vector3 CartesianPos(Mouse mouse)
+  Vector3 SphericalPos(Mouse mouse)
   {
 
     Theta = Theta.AddDeg( mouse.Delta.X);
-    Phi =  Phi.AddDeg(mouse.Delta.Y);
+    Phi =  Phi.AddDegClamp(mouse.Delta.Y);
+   // Util.DebugWrite(Phi.ToString());
     var t = Theta.Rad();
     var p = Phi.Rad();
-    var x = distance * Ma.Sin(p) * Ma.Sin(t);
-    var y = distance * Ma.Cos(p);
-    var z = distance * Ma.Sin(p) * Ma.Cos(t);
+    var x = Distance * Ma.Sin(p) * Ma.Sin(t);
+    var y = Distance * Ma.Cos(p);
+    var z = Distance * Ma.Sin(p) * Ma.Cos(t);
     var temp = new Vector3(x, y, z);
     return temp;
   }

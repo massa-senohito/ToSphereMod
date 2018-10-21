@@ -74,7 +74,9 @@ namespace Platform
           }
           axis.OnClicked(mouse,currentRay);
 #if DEBUGLINE
-      line.OnClicked(mouse, currentRay);
+      //line.OnClicked(mouse, currentRay);
+      //line.SetLine(Camera.Position + Camera.Forward * 10, Camera.Position + Camera.View.Right * 10);
+      //line.SetLine(new Vector3(2,-12,-12), new Vector3(-8,8,10));
 #endif
       //flush text to view
       device.Font.End();
@@ -90,7 +92,7 @@ namespace Platform
     {
       //render form
       Form = new RenderForm();
-      Form.Text = "Tutorial 16: Environment Mapping";
+      Form.Text = "MMD Model Viewer";
 
       ModForm.Show();
       ModForm.SetFactorBoxChanged(OnFactorTextChanged);

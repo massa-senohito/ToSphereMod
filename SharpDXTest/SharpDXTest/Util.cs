@@ -295,6 +295,18 @@ CamPos += Offset_Z * (*CamZAxis);
       return added % 360.0f;
     }
 
+    public static float Clamp(this float v , float min , float max)
+    {
+      return Math.Min(Math.Max(v, min), max);
+    }
+
+    public static float AddDegClamp(this float deg,float delta)
+    {
+      float added = deg + delta;
+
+      return added.Clamp(180.5f , 359.5f);
+    }
+
   }
 
   public static class Util

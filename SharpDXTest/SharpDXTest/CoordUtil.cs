@@ -44,6 +44,17 @@ namespace SharpDXTest
         v.Y.IsNearlyZero() &&
         v.Z.IsNearlyZero();
     }
+
+    public static Vector3 Copy(this Vector3 vector)
+    {
+      return new Vector3(vector.X, vector.Y, vector.Z);
+    }
+
+    public static Vector3 YZInverted(this Vector3 vector)
+    {
+      return new Vector3(vector.X, vector.Z, vector.Y);
+    }
+
     public static Vector3 GetNormalized(this Vector3 v)
     {
       var temp = new Vector3(v.X, v.Y, v.Z);

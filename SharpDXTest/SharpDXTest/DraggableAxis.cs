@@ -115,15 +115,15 @@ namespace SharpDXTest
         var res = ray.IntersectFace(item);
         if (res.IsHit)
         {
-          if(res.Info == "red")
+          if(res.Info.Contains("red") )
           {
             state.Update(res, ClickedAxis.X);
           }
-          if(res.Info == "green")
+          if(res.Info.Contains( "green" ) )
           {
             state.Update(res, ClickedAxis.Y);
           }
-          if(res.Info == "blue")
+          if(res.Info.Contains( "blue" ) )
           {
             state.Update(res, ClickedAxis.Z);
           }
