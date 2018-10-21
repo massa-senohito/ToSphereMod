@@ -104,8 +104,9 @@ namespace SharpDXTest
       var mesh = new SharpMesh(device);
       List<int> indices = new List<int>();
       List<Face> faces = new List<Face>();
+			List<string> texList = new List<string>( ); 
       int icount = 0;
-      foreach (var item in Materials)
+      foreach (Material item in Materials)
       {
         indices.AddRange(item.FlattenFace);
         int faceCount = item.FlattenFace.Count();
@@ -120,7 +121,7 @@ namespace SharpDXTest
       {
           string filename = DirPath + Path.DirectorySeparatorChar + item.TexName;
           subSet.DiffuseMap = device.LoadTextureFromFile(filename);
-
+					texList.Add( filename );
       }
         mesh.SubSets.Add(subSet);
 
@@ -135,6 +136,9 @@ namespace SharpDXTest
       }
       Index = indices.ToArray();
       Faces = faces.ToArray();
+			var inds = Index.Select( x => x.ToString( ) );
+			var facesS = Faces.Select( x => x.ToString( ) );
+			inds.Concat( facesS ).Concat( texList ).WriteFile( DirPath + "loadedFile.txt" );
       //Faces = new Face[Index.Length / 3];
       //for (int i = 0; i < Index.Length; i += 3)
       //{
@@ -166,8 +170,9 @@ namespace SharpDXTest
       Cast = new SphereCast(Matrix.Zero);
     }
 
-    public MMDModel(Vert[] vertex , IEnumerable<Material> material)
+    public MMDModel(Vert[] vertex , IEnumerable<Material> material , string path)
     {
+			DirPath = path;
       Vertice = vertex;
       OrigVertice = new Vert[Vertice.Length];
       Vertice.ArrayFullCopy(OrigVertice);

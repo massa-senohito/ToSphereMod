@@ -151,7 +151,14 @@ namespace Platform
         Model = new MMDModel(@"miku/mikuCSV.csv");
         NormalStart();
       }
-
+      else
+      {
+				MessageBox.Show(args[0] );
+				string V = args[ 0 ];
+				PMXLoader.WriteTestCSV( V );
+        Model = PMXLoader.Load(V);
+        NormalStart();
+      }
 
     }
 

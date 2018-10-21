@@ -380,7 +380,10 @@ CamPos += Offset_Z * (*CamZAxis);
       }
       return builder.ToString();
     }
-
+		public static void WriteFile( this IEnumerable<string> line , string path )
+		{
+			File.WriteAllLines( path , line );
+		}
 
   }
 
