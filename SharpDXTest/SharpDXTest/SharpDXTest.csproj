@@ -94,7 +94,7 @@
     <None Include="Properties\DataSources\GPUData.datasource" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\MMDataIO\MMDataIO\MMDataIO.csproj">
+    <ProjectReference Include="MMDataIO\MMDataIO.csproj">
       <Project>{1aef787f-b0ed-44b4-b091-6570888a91f7}</Project>
       <Name>MMDataIO</Name>
     </ProjectReference>

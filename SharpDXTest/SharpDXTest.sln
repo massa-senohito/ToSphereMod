@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpDXTest", "SharpDXTest\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpHelper", "SharpDXTest\SharpHelper\SharpHelper.csproj", "{EA6F422E-3D4F-499F-A76F-3DC366489387}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MMDataIO", "..\..\MMDataIO\MMDataIO\MMDataIO.csproj", "{1AEF787F-B0ED-44B4-B091-6570888A91F7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MMDataIO", "SharpDXTest\MMDataIO\MMDataIO.csproj", "{1AEF787F-B0ED-44B4-B091-6570888A91F7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

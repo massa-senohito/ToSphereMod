@@ -13,7 +13,7 @@ namespace SharpDXTest
 	{
 		static IEnumerable<int> IndexRange( PmxModelData model )
 		{
-			var faces = model.MaterialArray.Select( x => x.FaceCount ).ToList( );
+			List<int> faces = model.MaterialArray.Select( x => x.FaceCount ).ToList( );
 			int sum = 0;
 			for ( int i = 0 ; i < faces.Count( ) ; i++ )
 			{
@@ -26,7 +26,7 @@ namespace SharpDXTest
 		{
 			int FaceCount = 0;
 			int matIndex = 0;
-			var ranges = IndexRange( model ).ToList( );
+			List<int> ranges = IndexRange( model ).ToList( );
 			for ( int i = 0 ; i < model.VertexIndices.Length ; i += 3 )
 			{
 				var inds = $"Face,";
@@ -49,8 +49,8 @@ namespace SharpDXTest
 		{
 			int FaceCount = 0;
 			int matIndex = 0;
-			var ranges = IndexRange( model ).ToList( );
-			var start = 0;
+			List<int> ranges = IndexRange( model ).ToList( );
+			int start = 0;
 			if ( ind > 0 )
 			{
 				start = ranges[ ind - 1 ];
@@ -85,15 +85,15 @@ namespace SharpDXTest
 
 		static Material GetMat(  PmxModelData model , int matInd)
 		{
-			var data = model.MaterialArray[matInd];
+			PmxMaterialData data = model.MaterialArray[matInd];
 			var faceIndex = MatIndex( model , matInd);
 			var flattenFace = faceIndex.SelectMany( x => x ).Select( x => GetVert( model , x ) );
-			var texName = string.Empty;
+			string texName = string.Empty;
 			if ( data.TextureId != 255 )
 			{
 				texName = model.TextureFiles[ data.TextureId ];
 			}
-			var temp = new Material( data.MaterialName , texName , flattenFace , faceIndex );
+			Material temp = new Material( data.MaterialName , texName , flattenFace , faceIndex );
 			return temp;
 		}
 
@@ -111,10 +111,10 @@ namespace SharpDXTest
 			{
 				using ( var bin = new BinaryReader( sr ) )
 				{
-					var model = new PmxModelData( bin );
+					PmxModelData model = new PmxModelData( bin );
 					var vert = model.VertexArray.Select( GetVert ).ToArray();
 					var mats = GetMat( model );
-					var parent = Directory.GetParent( path ).FullName;
+					string parent = Directory.GetParent( path ).FullName;
 					return new MMDModel( vert , mats , parent );
 				}
 			}
@@ -127,7 +127,7 @@ namespace SharpDXTest
 			{
 				using ( var bin = new BinaryReader( sr ) )
 				{
-					var model = new PmxModelData( bin );
+					PmxModelData model = new PmxModelData( bin );
 					var vert = model.VertexArray.Select( x => x.Pos.ToString( ) );
 					var mats = model.MaterialArray.Select( x => "mat" + x.FaceCount.ToString( ) );
 

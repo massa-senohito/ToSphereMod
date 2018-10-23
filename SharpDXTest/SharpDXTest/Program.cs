@@ -18,244 +18,245 @@ using SharpHelper;
 
 namespace Platform
 {
-  public static class Program
-  {
+	public static class Program
+	{
 
-    public static MMDModel Model;
-    static DraggableAxis axis = new DraggableAxis("axis/axis.csv");
-    static DebugLine line = new DebugLine("line/line.csv");
-    static Vector2 clicked = Vector2.Zero;
-    static RayWrap CameraRay;
+		public static MMDModel Model;
+		static DraggableAxis axis = new DraggableAxis( "axis/axis.csv" );
+		static DebugLine line = new DebugLine( "line/line.csv" );
+		static Vector2 clicked = Vector2.Zero;
+		static RayWrap CameraRay;
 
-    public static SharpFPS FpsCounter = new SharpFPS();
-    public static VDBDebugger debug;
-    public static TrackBallCamera Camera = new TrackBallCamera(new Vector3(0,10,10) , new Vector3(0,10,0));
-    //static TrackBallCamera camera = new TrackBallCamera(new Vector3(0,5,5) , new Vector3(0,0,0));
-    static Matrix Projection;
-    static Matrix View;
-    static ViewportF Viewport;
+		public static SharpFPS FpsCounter = new SharpFPS( );
+		public static VDBDebugger debug;
+		public static TrackBallCamera Camera = new TrackBallCamera( new Vector3( 0 , 10 , 10 ) , new Vector3( 0 , 10 , 0 ) );
+		//static TrackBallCamera camera = new TrackBallCamera(new Vector3(0,5,5) , new Vector3(0,0,0));
+		static Matrix Projection;
+		static Matrix View;
+		static ViewportF Viewport;
 
-    static Mouse mouse = new Mouse();
-    static RenderForm Form;
-    static BlenderModifier.SphereModForm ModForm = new BlenderModifier.SphereModForm();
+		static Mouse mouse = new Mouse( );
+		static RenderForm Form;
+		static BlenderModifier.SphereModForm ModForm = new BlenderModifier.SphereModForm( );
 
-    static void OnResizeForm(float ratio, SharpDevice device)
-    {
-      var viewports = device.DeviceContext.Rasterizer.GetViewports<ViewportF>();
-      Viewport = viewports[0];
-      Camera.OnResize(ratio);
-    }
+		static void OnResizeForm( float ratio , SharpDevice device )
+		{
+			var viewports = device.DeviceContext.Rasterizer.GetViewports<ViewportF>( );
+			Viewport = viewports[ 0 ];
+			Camera.OnResize( ratio );
+		}
 
-    static void PostViewUpdate(SharpDevice device)
-    {
+		static void PostViewUpdate( SharpDevice device )
+		{
 #if FONT
-          //begin drawing text
-          device.Font.Begin();
+			//begin drawing text
+			device.Font.Begin( );
 
-          //draw string
-          FpsCounter.Update();
-          device.Font.DrawString("FPS: " + FpsCounter.FPS, 0, 0);
+			//draw string
+			FpsCounter.Update( );
+			device.Font.DrawString( "FPS: " + FpsCounter.FPS , 0 , 0 );
 
-          CameraRay = new RayWrap(Ray.GetPickRay((int)clicked.X, (int)clicked.Y, Viewport, View * Projection));
-      var currentRay = new RayWrap(Ray.GetPickRay((int)mouse.Position.X, (int)mouse.Position.Y, Viewport, View * Projection));
-          device.Font.DrawString("mouse: " + CameraRay.From, 0, 30);
-          device.Font.DrawString("mouseto: " + CameraRay.To, 0, 60);
-          debug.vdb_label("model");
-          debug.Send(axis.ModelStr);
-          debug.vdb_label("ray");
-          debug.Send(CameraRay.RayStr);
+			CameraRay = new RayWrap( Ray.GetPickRay( ( int )clicked.X , ( int )clicked.Y , Viewport , View * Projection ) );
+			var currentRay = new RayWrap( Ray.GetPickRay( ( int )mouse.Position.X , ( int )mouse.Position.Y , Viewport , View * Projection ) );
+			device.Font.DrawString( "mouse: " + CameraRay.From , 0 , 30 );
+			device.Font.DrawString( "mouseto: " + CameraRay.To , 0 , 60 );
+			debug.vdb_label( "model" );
+			debug.Send( axis.ModelStr );
+			debug.vdb_label( "ray" );
+			debug.Send( CameraRay.RayStr );
 
-          var hits = axis.HitPos(CameraRay).ToArray();
-          for (int j = 0; j < hits.Count(); j++)
-          {
-            debug.vdb_label("hit");
-            debug.Send(hits[j].HitPosition.DebugStr());
-            device.Font.DrawString("hit: " + hits[j].Info, 0, 90 + 30 * j);
-          }
-          axis.OnClicked(mouse,currentRay);
+			var hits = axis.HitPos( CameraRay ).ToArray( );
+			for ( int j = 0 ; j < hits.Count( ) ; j++ )
+			{
+				debug.vdb_label( "hit" );
+				debug.Send( hits[ j ].HitPosition.DebugStr( ) );
+				device.Font.DrawString( "hit: " + hits[ j ].Info , 0 , 90 + 30 * j );
+			}
+			axis.OnClicked( mouse , currentRay );
 #if DEBUGLINE
       //line.OnClicked(mouse, currentRay);
       //line.SetLine(Camera.Position + Camera.Forward * 10, Camera.Position + Camera.View.Right * 10);
       //line.SetLine(new Vector3(2,-12,-12), new Vector3(-8,8,10));
 #endif
-      //flush text to view
-      device.Font.End();
+			//flush text to view
+			device.Font.End( );
 #endif
-    }
+		}
 
-    static void PreViewUpdate(SharpDevice device)
-    {
+		static void PreViewUpdate( SharpDevice device )
+		{
 
-    }
+		}
 
-    public static void NormalStart()
-    {
-      //render form
-      Form = new RenderForm();
-      Form.Text = "MMD Model Viewer";
+		public static void NormalStart()
+		{
+			//render form
+			Form = new RenderForm( );
+			Form.Text = "MMD Model Viewer";
 
-      ModForm.Show();
-      ModForm.SetFactorBoxChanged(OnFactorTextChanged);
-      ModForm.SetRadiusBoxChanged(OnFactorTextChanged);
-      ModForm.SetAlphaBarChanged(OnAlphaBarChanged);
-      //frame rate counter
-      #region addEvent
-      Form.MouseClick += Form_MouseClick;
-      Form.MouseMove += Form_MouseMove;
-      Form.MouseWheel += Form_MouseWheel;
-      Form.KeyUp += Form_KeyUp; ;
-      debug = new VDBDebugger();
-      #endregion
-      using (SharpDevice device = new SharpDevice(Form))
-      {
+			ModForm.Show( );
+			ModForm.SetFactorBoxChanged( OnFactorTextChanged );
+			ModForm.SetRadiusBoxChanged( OnFactorTextChanged );
+			ModForm.SetAlphaBarChanged( OnAlphaBarChanged );
+			//frame rate counter
+			#region addEvent
+			Form.MouseClick += Form_MouseClick;
+			Form.MouseMove += Form_MouseMove;
+			Form.MouseWheel += Form_MouseWheel;
+			Form.KeyUp += Form_KeyUp;
+			;
+			debug = new VDBDebugger( );
+			#endregion
+			using ( SharpDevice device = new SharpDevice( Form ) )
+			{
 
-        Model.LoadTexture(device);
-        axis.LoadTexture(device);
+				Model.LoadTexture( device );
+				axis.LoadTexture( device );
 #if DEBUGLINE
         line.LoadTexture(device);
         line.AfterLoaded();
 #endif
 
-        //init frame counter
-        FpsCounter.Reset();
-        device.SetBlend(BlendOperation.Add, BlendOption.SourceAlpha, BlendOption.InverseSourceAlpha);
-        OnResizeForm((float)Form.ClientRectangle.Width / Form.ClientRectangle.Height, device);
+				//init frame counter
+				FpsCounter.Reset( );
+				device.SetBlend( BlendOperation.Add , BlendOption.SourceAlpha , BlendOption.InverseSourceAlpha );
+				OnResizeForm( ( float )Form.ClientRectangle.Width / Form.ClientRectangle.Height , device );
 
-        //main loop
-        RenderLoop.Run(Form, () => OnUpdate(device) );
+				//main loop
+				RenderLoop.Run( Form , () => OnUpdate( device ) );
 
-        //release resource
+				//release resource
 
-        Model.Dispose();
-        axis.Dispose();
+				Model.Dispose( );
+				axis.Dispose( );
 #if DEBUGLINE
         line.Dispose();
 #endif
-      }
-    }
+			}
+		}
 
-    /// <summary>
-    /// The main entry point for the application.
-    /// </summary>
-    [STAThread]
-    public static void Main(string[] args)
-    {
+		/// <summary>
+		/// The main entry point for the application.
+		/// </summary>
+		[STAThread]
+		public static void Main( string[] args )
+		{
 
-      if (!SharpDevice.IsDirectX11Supported())
-      {
-        System.Windows.Forms.MessageBox.Show("DirectX11 Not Supported");
-        return;
-      }
-      if (args.Length == 0)
-      {
-        Model = new MMDModel(@"miku/mikuCSV.csv");
-        NormalStart();
-      }
-      else
-      {
-				MessageBox.Show(args[0] );
+			if ( !SharpDevice.IsDirectX11Supported( ) )
+			{
+				MessageBox.Show( "DirectX11 Not Supported" );
+				return;
+			}
+			if ( args.Length == 0 )
+			{
+				Model = new MMDModel( @"miku/mikuCSV.csv" );
+				NormalStart( );
+			}
+			else
+			{
+				MessageBox.Show( args[ 0 ] );
 				string V = args[ 0 ];
 				PMXLoader.WriteTestCSV( V );
-        Model = PMXLoader.Load(V);
-        NormalStart();
-      }
+				Model = PMXLoader.Load( V );
+				NormalStart( );
+			}
 
-    }
+		}
 
-    private static void Form_KeyUp(object sender, KeyEventArgs e)
-    {
-      Util.DebugWrite( e.KeyData.ToString() );
-    }
+		private static void Form_KeyUp( object sender , KeyEventArgs e )
+		{
+			Util.DebugWrite( e.KeyData.ToString( ) );
+		}
 
-    private static void OnUpdate(SharpDevice device)
-    {
-      //set transformation matrix
-      float ratio = (float)Form.ClientRectangle.Width / Form.ClientRectangle.Height;
-      //90° degree with 1 ratio
-      Projection = Camera.Projection;
-      //Resizing
-      if (device.MustResize)
-      {
-        device.Resize();
-        OnResizeForm(ratio, device);
+		private static void OnUpdate( SharpDevice device )
+		{
+			//set transformation matrix
+			float ratio = ( float )Form.ClientRectangle.Width / Form.ClientRectangle.Height;
+			//90° degree with 1 ratio
+			Projection = Camera.Projection;
+			//Resizing
+			if ( device.MustResize )
+			{
+				device.Resize( );
+				OnResizeForm( ratio , device );
 
-      }
+			}
 
-      //apply states
-      device.UpdateAllStates();
-      PreViewUpdate(device);
+			//apply states
+			device.UpdateAllStates( );
+			PreViewUpdate( device );
 
-      //MATRICES
+			//MATRICES
 
-      //camera
+			//camera
 
-      View = Camera.GetView();
-      //View = Matrix.LookAtLH(new Vector3(0, 30, 70), new Vector3(0, 0, 0), Vector3.UnitY);
-      Camera.Update(mouse, FpsCounter.Delta * 0.001f);
-      mouse.Update();
-      Vector3 from = Camera.Position;
-      if (!float.IsNaN(from.X))
-      {
-        debug.vdb_label("campos");
-        debug.Send(from.DebugStr());
-      }
+			View = Camera.GetView( );
+			//View = Matrix.LookAtLH(new Vector3(0, 30, 70), new Vector3(0, 0, 0), Vector3.UnitY);
+			Camera.Update( mouse , FpsCounter.Delta * 0.001f );
+			mouse.Update( );
+			Vector3 from = Camera.Position;
+			if ( !float.IsNaN( from.X ) )
+			{
+				debug.vdb_label( "campos" );
+				debug.Send( from.DebugStr( ) );
+			}
 
-      Matrix world = Matrix.Translation(0, 0, 50) * Matrix.RotationY(Environment.TickCount / 1000.0F);
+			Matrix world = Matrix.Translation( 0 , 0 , 50 ) * Matrix.RotationY( Environment.TickCount / 1000.0F );
 
-      //light direction
-      Vector3 lightDirection = new Vector3(0.5f, 0, -1);
-      lightDirection.Normalize();
+			//light direction
+			Vector3 lightDirection = new Vector3( 0.5f , 0 , -1 );
+			lightDirection.Normalize( );
 
-      //RENDERING TO DEVICE
+			//RENDERING TO DEVICE
 
-      //Set original targets
-      device.SetDefaultTargers();
+			//Set original targets
+			device.SetDefaultTargers( );
 
-      //clear color
-      device.Clear(Color.Brown);
+			//clear color
+			device.Clear( Color.Brown );
 
-      //apply shader
-      Model.Update(device, View * Projection);
-      axis.Update(device, View * Projection);
+			//apply shader
+			Model.Update( device , View * Projection );
+			axis.Update( device , View * Projection );
 #if DEBUGLINE
           line.Update(device, View * Projection);
 #endif
-      Model.ToSphere(axis.Position);
-      Model.ToSphere(axis.Position.InvX() , true );
+			Model.ToSphere( axis.Position );
+			Model.ToSphere( axis.Position.InvX( ) , true );
 
-      PostViewUpdate(device);
+			PostViewUpdate( device );
 
-      //present
-      device.Present();
+			//present
+			device.Present( );
 
-    }
+		}
 
-    private static void Form_MouseWheel(object sender, MouseEventArgs e)
-    {
-      var startRay = new RayWrap(Ray.GetPickRay( e.X, e.Y, Viewport, View * Projection));
-      mouse.OnMouseMove(e,startRay);
-    }
+		private static void Form_MouseWheel( object sender , MouseEventArgs e )
+		{
+			var startRay = new RayWrap( Ray.GetPickRay( e.X , e.Y , Viewport , View * Projection ) );
+			mouse.OnMouseMove( e , startRay );
+		}
 
-    private static void Form_MouseMove(object sender, MouseEventArgs e)
-    {
-      var startRay = new RayWrap(Ray.GetPickRay( e.X, e.Y, Viewport, View * Projection));
-      mouse.OnMouseMove(e,startRay);
-    }
+		private static void Form_MouseMove( object sender , MouseEventArgs e )
+		{
+			var startRay = new RayWrap( Ray.GetPickRay( e.X , e.Y , Viewport , View * Projection ) );
+			mouse.OnMouseMove( e , startRay );
+		}
 
-    private static void Form_MouseClick(object sender, MouseEventArgs e)
-    {
-      clicked = new Vector2(e.X, e.Y);
-    }
+		private static void Form_MouseClick( object sender , MouseEventArgs e )
+		{
+			clicked = new Vector2( e.X , e.Y );
+		}
 
-    private static void OnFactorTextChanged(object sender,EventArgs e)
-    {
-      Model.OnFactorChanged(ModForm.Factor);
-      Model.OnRadiusChanged(ModForm.Radius);
-    }
-    private static void OnAlphaBarChanged(object sender,EventArgs e)
-    {
-      axis.Alpha = ModForm.Alpha;
-    }
-  }
+		private static void OnFactorTextChanged( object sender , EventArgs e )
+		{
+			Model.OnFactorChanged( ModForm.Factor );
+			Model.OnRadiusChanged( ModForm.Radius );
+		}
+		private static void OnAlphaBarChanged( object sender , EventArgs e )
+		{
+			axis.Alpha = ModForm.Alpha;
+		}
+	}
 }
 

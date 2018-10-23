@@ -15,6 +15,7 @@ namespace SharpDXTest
     TcpClient Tcp;
     NetworkStream Ns;
     List< string> Strings;
+
     public VDBDebugger()
     {
       string ipOrHost = "127.0.0.1";
@@ -54,6 +55,7 @@ namespace SharpDXTest
     {
       return String.Format("t {0} {1} {2} {3} {4} {5} {6} {7} {8}\n", x0, y0, z0, x1, y1, z1, x2, y2, z2);
     }
+
     public static string vdb_point(float x, float y, float z)
     {
       //  var line = vdb_line(x - 5, y - 5, z - 5, x + 5, y + 5, z + 5) 
@@ -61,14 +63,17 @@ namespace SharpDXTest
       var line = String.Format("p {0} {1} {2}\n", x, y, z);
       return line;
     }
+
     public static string vdb_line(float x0, float y0, float z0, float x1, float y1, float z1)
     {
       return String.Format("l {0} {1} {2} {3} {4} {5}\n", x0, y0, z0, x1, y1, z1);
     }
+
     public static string vdb_color(float x0, float y0, float z0, float x1, float y1, float z1)
     {
       return String.Format("c {0} {1} {2}\n", x0, y0, z0);
     }
+
     int vdb_intern(string str)
     {
       for (int i = 0; i < Strings.Count; i++)
@@ -84,6 +89,7 @@ namespace SharpDXTest
       Send(String.Format("s {0} {1}\n", key, str));
       return key;
     }
+
     public void vdb_label(string s)
     {
       int key = vdb_intern(s);
@@ -97,174 +103,23 @@ namespace SharpDXTest
     }
   }
 
-  public class Camera
-  {
-    Vector3 PosLocal = new Vector3(0, 30, 70);
-    Vector3 To = new Vector3(0, 0, 0);
-
-    Matrix CamAtt = Matrix.Identity;
-
-    Vector3 MoveDir;
-    float ZAngle = 0;
-    float ZOffset;
-    float Dist;
-    Matrix View;
-
-    public Camera(Vector3 pos , Vector3 to )
-    {
-      PosLocal = pos - to;
-      To = to;
-      View = Matrix.LookAtLH(pos, To, Vector3.UnitY);
-          View.Decompose(out Vector3 sc1, out Quaternion ro1, out Vector3 tr1);
-          var rr1 = ro1.EulerAngle();
-      CamAtt = ro1.RotMat();
-    }
-
-    public Matrix GetView() { return View; }
-
-    public void Move(Vector3 vector)
-    {
-      MoveDir.X += vector.X;
-      MoveDir.Y += vector.Y;
-      ZOffset += vector.Z;
-    }
-#if true
-    public void Update()
-    {
-      // 1
-      var rot = //new Quaternion(Vector3.UnitZ,(float)Math.PI);
-        new Vector3(0, 0, ZAngle).QuatFromEuler();
-      var rr = rot.EulerAngle();
-      Matrix.RotationQuaternion(ref rot, out Matrix rotMat);
-      CamAtt *= rotMat;
-      // 2 カメラの移動方向を求めるベクトル
-      Matrix.Translation(ref MoveDir, out Matrix dMat);
-      var dl = dMat * CamAtt;
-      if (!dl.TranslationVector.IsZero)
-      {
-        var rotAxis = dl.TranslationVector.Cross(CamAtt.Forward);
-        float angleUnit = 0.02f;
-        var trans = new Quaternion(rotAxis, angleUnit);
-        var tt = trans.EulerAngle();
-        var transQ = trans.RotMat();
-            var campos = PosLocal.TransMat() * transQ;
-        // ここまでローカルとしてはあってる
-        PosLocal = campos.TranslationVector;
-        
-      }
-
-
-      View = Matrix.LookAtLH(PosLocal + To, To, Vector3.UnitY);
-    }
-#else
-    public void Update()
-    {
-      // 1
-      var rot = //new Quaternion(Vector3.UnitZ,(float)Math.PI);
-        new Vector3(0, 0, ZAngle).QuatFromEuler();
-      var rr = rot.EulerAngle();
-      Matrix.RotationQuaternion(ref rot, out Matrix rotMat);
-      CamAtt *= rotMat;
-      // 2 カメラの移動方向を求めるベクトル
-      Matrix.Translation(ref MoveDir, out Matrix dMat);
-      var dl = dMat * CamAtt;
-      if (!dl.TranslationVector.IsZero)
-      {
-        var rotAxis = dl.TranslationVector.Cross(CamAtt.Forward);
-        float angleUnit = 0.02f;
-        var trans = new Quaternion(rotAxis, angleUnit);
-        var tt = trans.EulerAngle();
-        var transQ = trans.RotMat();
-        {
-          CamAtt.Decompose(out Vector3 sc1, out Quaternion ro1, out Vector3 tr1);
-          var rr1 = ro1.EulerAngle();
-        }
-       // local
-        var campos = PosLocal.TransMat() * transQ;
-        // ここまでローカルとしてはあってる
-        PosLocal = campos.TranslationVector;
-        //3
-        Vector3 z = -PosLocal;
-        z.Normalize();
-        var y = CamAtt.Up;
-        var x = y.Cross(z);
-        x.Normalize();
-        y = z.Cross(y);
-        y.Normalize();
-        CamAtt.Right = x;
-        CamAtt.Up = y;
-        CamAtt.Forward = z;
-        {
-          CamAtt.Decompose(out Vector3 sc1, out Quaternion ro1, out Vector3 tr1);
-          var rr1 = ro1.EulerAngle();
-        }
-      }
-      // 4
-      Dist = PosLocal.Length();
-      if(Dist - ZOffset > 0)
-      {
-        var z = -PosLocal;
-        z.Normalize();
-        PosLocal += ZOffset * z;
-        Dist -= ZOffset;
-      }
-      // 5 ワールド更新
-      var posW = PosLocal + To;
-
-      View = CamAtt;
-      {
-        View.Decompose(out Vector3 sc2, out Quaternion ro2, out Vector3 tr2);
-        var rr2 = ro2.EulerAngle();
-      }
-      View.TranslationVector = posW;
-      {
-        View.Decompose(out Vector3 sc2, out Quaternion ro2, out Vector3 tr2);
-        var rr2 = ro2.EulerAngle();
-      }
-      View.M44 = 1.0f;
-      View.Invert();
-      {
-        View.Decompose(out Vector3 sc2, out Quaternion ro2, out Vector3 tr2);
-        var rr2 = ro2.EulerAngle();
-      }
-
-      ZOffset = 0;
-      ZAngle = 0;
-      MoveDir = Vector3.Zero;
-      /*
-       * D3DXVec3Cross( &X, &Y, &Z );
-D3DXVec3Normalize( &X, &X );
-
-D3DXVec3Cross( &Y, &Z, &X );
-D3DXVec3Normalize( &Y, &Y );
-
-D3DXMatrixIdentity( CamMat );
-memcpy( CamMat.m[0], &X, sizeof( D3DXVECTOR3 ) );
-memcpy( CamMat.m[1], &Y, sizeof( D3DXVECTOR3 ) );
-memcpy( CamMat.m[2], &Z, sizeof( D3DXVECTOR3 ) );
-
-　これで、カメラの新しい姿勢と位置が定まりました。しかし、カメラの奥行き方向も考慮したいはずです。これは簡単で、新しい位置を原点方向にオフセットすれば良いんです。原点方向はカメラのZ軸ですから、
-D3DXVECTOR3* CamZAxis = (D3DXVECTOR3*)CamMat.m[2];
-CamPos += Offset_Z * (*CamZAxis);
-       */
-    }
-#endif
-  }
-
   public static class Ma
   {
     public static float Sin(float f)
     {
       return (float)Math.Sin(f);
     }
+
     public static float ASin(float f)
     {
       return (float)Math.Asin(f);
     }
+
     public static float Cos(float f)
     {
       return (float)Math.Cos(f);
     }
+
     public static float ACos(float f)
     {
       return (float)Math.Acos(f);
@@ -279,6 +134,7 @@ CamPos += Offset_Z * (*CamZAxis);
     {
       return f / 180.0f * (float)Math.PI;
     }
+
     public static float Deg(this float f)
     {
       return f / (float)Math.PI * 180.0f;
@@ -312,6 +168,7 @@ CamPos += Offset_Z * (*CamZAxis);
   public static class Util
   {
     public const float ZeroTolerancef = 1e-06f;
+
     public static void ArrayFullCopy(this Array array , Array target)
     {
       Array.Copy(array, target, array.Length);
@@ -334,6 +191,7 @@ CamPos += Offset_Z * (*CamZAxis);
     {
       return float.Parse(s);
     }
+
     public static int Int(this string s)
     {
       return int.Parse(s);
@@ -380,6 +238,7 @@ CamPos += Offset_Z * (*CamZAxis);
       }
       return builder.ToString();
     }
+
 		public static void WriteFile( this IEnumerable<string> line , string path )
 		{
 			File.WriteAllLines( path , line );
@@ -393,10 +252,12 @@ CamPos += Offset_Z * (*CamZAxis);
     {
       get;
     }
+
     public Vector3 HitPosition
     {
       get;
     }
+
     public string Info
     {
       get;
@@ -407,12 +268,14 @@ CamPos += Offset_Z * (*CamZAxis);
       IsHit = isHit;
       HitPosition = pos;
     }
+
     public HitResult( Vector3 pos , string info)
     {
       IsHit = true;
       HitPosition = pos;
       Info = info;
     }
+
     public static HitResult Null
     {
       get
@@ -420,6 +283,7 @@ CamPos += Offset_Z * (*CamZAxis);
         return new HitResult(false, Vector3.Zero);
       }
     }
+
   }
 
   public class RayWrap
@@ -429,6 +293,7 @@ CamPos += Offset_Z * (*CamZAxis);
       get;
       private set;
     }
+
     public Vector3 To
     {
       get;
@@ -472,6 +337,7 @@ CamPos += Offset_Z * (*CamZAxis);
        return  VDBDebugger.vdb_line(From.X, From.Y, From.Z, To.X, To.Y, To.Z);
       }
     }
+
     public void Extend(float len)
     {
       Length += len;
@@ -501,31 +367,37 @@ CamPos += Offset_Z * (*CamZAxis);
     {
       get;
     }
+
     public Vector3 P1
     {
       get;
       private set;
     }
+
     public Vector3 P2
     {
       get;
       private set;
     }
+
     public Vector3 P3
     {
       get;
       private set;
     }
+
     public Vector3 P1O
     {
       get;
       private set;
     }
+
     public Vector3 P2O
     {
       get;
       private set;
     }
+
     public Vector3 P3O
     {
       get;
@@ -537,17 +409,21 @@ CamPos += Offset_Z * (*CamZAxis);
       get;
       private set;
     }
+
     public Vector3 BC
     {
       get;
       private set;
     }
+
     public Vector3 CA
     {
       get;
       private set;
     }
+
     public Vector3 BaryCentric;
+
     public float AverageZ
     {
       get
@@ -555,6 +431,7 @@ CamPos += Offset_Z * (*CamZAxis);
         return P1.Z + P2.Z + P3.Z;
       }
     }
+
     public void SetP1(Vector3 loc)
     {
       var delta = loc - P1;
@@ -614,6 +491,7 @@ CamPos += Offset_Z * (*CamZAxis);
     {
       get;
     }
+
     public override string ToString()
     {
       return P1.ToString() + " " + P2.ToString() + " " + P3.ToString();
