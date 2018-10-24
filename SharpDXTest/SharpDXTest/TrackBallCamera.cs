@@ -274,9 +274,9 @@ public class TrackBallCamera
    // Util.DebugWrite(Phi.ToString());
     float t = Theta.Rad();
     float p = Phi.Rad();
-    float x = Distance * Ma.Sin(p) * Ma.Sin(t);
-    float y = Distance * Ma.Cos(p);
-    float z = Distance * Ma.Sin(p) * Ma.Cos(t);
+    float x = Distance * Util.Sin( p ) * Util.Sin( t );
+    float y = Distance * Util.Cos( p );
+    float z = Distance * Util.Sin( p ) * Util.Cos( t );
     Vector3 temp = new Vector3(x, y, z);
     return temp;
   }
