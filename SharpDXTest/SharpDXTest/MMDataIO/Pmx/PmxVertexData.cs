@@ -41,8 +41,9 @@ namespace MMDataIO.Pmx
                 case 3:
                     ExtraUv4 = value;
                     break;
+				default:
+					throw new ArgumentOutOfRangeException($"Out of range {idx}");
             }
-            throw new ArgumentOutOfRangeException($"Out of range {idx}");
         }
 
         public Vector4 ExtraUv1;

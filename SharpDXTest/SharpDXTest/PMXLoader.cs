@@ -22,15 +22,16 @@ namespace SharpDXTest
 			}
 		}
 
-		static IEnumerable<string> Inds( PmxModelData model )
+		static IEnumerable<string> IndiceString( PmxModelData model )
 		{
 			int FaceCount = 0;
 			int matIndex = 0;
 			List<int> ranges = IndexRange( model ).ToList( );
 			for ( int i = 0 ; i < model.VertexIndices.Length ; i += 3 )
 			{
-				var inds = $"Face,";
+				string inds = $"Face,";
 
+				// countは0含まないので
 				if ( i + 3 > ranges[ matIndex ] )
 				{
 					matIndex++;
@@ -45,7 +46,8 @@ namespace SharpDXTest
 				FaceCount++;
 			}
 		}
-		static IEnumerable<int[]> MatIndex( PmxModelData model , int ind)
+
+		static IEnumerable<int[]> IndiceByMaterial( PmxModelData model , int ind)
 		{
 			int FaceCount = 0;
 			int matIndex = 0;
@@ -89,9 +91,11 @@ namespace SharpDXTest
 		static Material GetMat(  PmxModelData model , int matInd)
 		{
 			PmxMaterialData data = model.MaterialArray[matInd];
-			var faceIndex = MatIndex( model , matInd);
+			var faceIndex = IndiceByMaterial( model , matInd);
 			var flattenFace = faceIndex.SelectMany( x => x ).Select( x => GetVert( model , x ) );
 			string texName = string.Empty;
+
+			// テクスチャがない場合255が使われる
 			if ( data.TextureId != 255 )
 			{
 				texName = model.TextureFiles[ data.TextureId ];
@@ -134,7 +138,7 @@ namespace SharpDXTest
 					var vert = model.VertexArray.Select( x => x.Pos.ToString( ) );
 					var mats = model.MaterialArray.Select( x => "mat" + x.FaceCount.ToString( ) );
 
-					var cont = vert.Concat( mats ).Concat( Inds( model ) );
+					var cont = vert.Concat( mats ).Concat( IndiceString( model ) );
 					File.WriteAllLines( "MMDModelTest.txt" , cont );
 				}
 			}

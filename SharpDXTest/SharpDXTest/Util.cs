@@ -428,7 +428,7 @@ namespace SharpDXTest
 			P1 -= loc;
 			P2 += delta;
 			P3 += delta;
-			ReculcEdge( );
+			RecalcEdge( );
 		}
 
 		public Face( Vector3 p1 , Vector3 p2 , Vector3 p3 , string matName )
@@ -445,11 +445,11 @@ namespace SharpDXTest
 			n2.Normalize( );
 			Normal = Vector3.Cross( n2 , n1 );
 			BaryCentric = ( P1 + P2 + P3 ) / 3.0f;
-			ReculcEdge( );
+			RecalcEdge( );
 			MatName = matName;
 		}
 
-		private void ReculcEdge()
+		private void RecalcEdge()
 		{
 			AB = P2 - P1;
 			BC = P3 - P2;
@@ -461,7 +461,7 @@ namespace SharpDXTest
 			P1 = matrix.TransByMat( P1O ).ToV3( );
 			P2 = matrix.TransByMat( P2O ).ToV3( );
 			P3 = matrix.TransByMat( P3O ).ToV3( );
-			ReculcEdge( );
+			RecalcEdge( );
 
 		}
 

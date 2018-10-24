@@ -320,7 +320,7 @@ namespace SharpDXTest
 			//; Vertex,頂点Index,位置_x,位置_y,位置_z,法線_x,法線_y,法線_z,エッジ倍率,UV_u,UV_v,追加UV1_x,追加UV1_y,追加UV1_z,追加UV1_w,追加UV2_x,追加UV2_y,追加UV2_z,追加UV2_w,追加UV3_x,追加UV3_y,追加UV3_z,追加UV3_w,追加UV4_x,追加UV4_y,追加UV4_z,追加UV4_w,ウェイト変形タイプ(0:BDEF1 / 1:BDEF2 / 2:BDEF4 / 3:SDEF / 4:QDEF),ウェイト1_ボーン名,ウェイト1_ウェイト値,ウェイト2_ボーン名,ウェイト2_ウェイト値,ウェイト3_ボーン名,ウェイト3_ウェイト値,ウェイト4_ボーン名,ウェイト4_ウェイト値,C_x,C_y,C_z,R0_x,R0_y,R0_z,R1_x,R1_y,R1_z
 			//   Vertex,0,0.3916405,16.48059,-0.7562667,0.383015,0.4676141,-0.7966408,1,0.8393391,0.7603291,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"上半身2",1,"",0,"",0,"",0,0,0,0,0,0,0,0,0,0
 
-			foreach ( var item in lines )
+			foreach ( string item in lines )
 			{
 				var csv = item.Split( ',' );
 				yield return new Vert( new Vector3( csv[ 2 ].Float( ) , csv[ 3 ].Float( ) , csv[ 4 ].Float( ) ) , new Vector2( csv[ 9 ].Float( ) , csv[ 10 ].Float( ) ) );
@@ -334,8 +334,8 @@ namespace SharpDXTest
 			// ミラーの場合、元のモデルに対して変更を行うと上書きになってしまう
 			// 順序が生まれてしまうが、変更後に対して作用させる
 			var originalVertPos = add ?
-			  Vertice    .Select( v => v.Position ).ToArray( ) :
-			  OrigVertice.Select( v => v.Position ).ToArray( );
+				Vertice    .Select( v => v.Position ).ToArray( ) :
+				OrigVertice.Select( v => v.Position ).ToArray( );
 
 			Vector3[] castedVertice = Cast.GetSpereUntilEnd( originalVertPos );
 			for ( int i = 0 ; i < castedVertice.Length ; i++ )

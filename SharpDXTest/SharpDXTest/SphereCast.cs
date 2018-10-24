@@ -79,7 +79,6 @@ namespace BlenderModifier
 
 			for ( int i = start ; i < lenc ; i++ )
 			{
-
 				V3 tmpCo = vs[ i ];
 				{
 					//\blenderSource\blender\source\blender\blenlib\BLI_math_matrix.h
@@ -91,6 +90,7 @@ namespace BlenderModifier
 				{
 					break;
 				}
+				// todo 距離で弾くのを早めにすれば最適化できそう
 				if ( tmpCo.Length( ) > Radius )
 				{
 					continue;

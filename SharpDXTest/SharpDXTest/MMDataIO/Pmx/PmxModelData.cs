@@ -193,6 +193,7 @@ namespace MMDataIO.Pmx
                     id = reader.ReadUInt16();
                     break;
 
+					// todo おそらく全部Uint,ただCloneなどでボクシングできないので一旦おき
                 case 4:
                     id = reader.ReadInt32();
                     break;
