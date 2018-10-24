@@ -113,7 +113,7 @@ namespace SharpDXTest
 				{
 					PmxModelData model = new PmxModelData( bin );
 					var vert = model.VertexArray.Select( GetVert ).ToArray();
-					var mats = GetMat( model );
+					IEnumerable<Material> mats = GetMat( model );
 					string parent = Directory.GetParent( path ).FullName;
 					return new MMDModel( vert , mats , parent );
 				}
@@ -132,7 +132,7 @@ namespace SharpDXTest
 					var mats = model.MaterialArray.Select( x => "mat" + x.FaceCount.ToString( ) );
 
 					var cont = vert.Concat( mats ).Concat( Inds( model ) );
-					File.WriteAllLines( "すっぴんTest.txt" , cont );
+					File.WriteAllLines( "MMDModelTest.txt" , cont );
 				}
 			}
 		}
