@@ -21,10 +21,15 @@ namespace SharpDXTest
     //;Face,親材質名,面Index,頂点Index1,頂点Index2,頂点Index3
     //Face,"スカート腕ヘドフォン",0,858,840,855
     public string Name;
+
     public string TexName;
+
     public IEnumerable<Vert> Vertice;
+
     public IEnumerable<int[]> Faces;
+
     public int[] FlattenFace;
+
     public Material(string line)
     {
       var csv = line.Split(',');
@@ -66,11 +71,14 @@ namespace SharpDXTest
         yield return mat;
       }
     }
+
     public override string ToString()
     {
       return Name + " : " + TexName;
     }
+
   }
+
   [StructLayout(LayoutKind.Explicit)]
   public struct GPUData
   {

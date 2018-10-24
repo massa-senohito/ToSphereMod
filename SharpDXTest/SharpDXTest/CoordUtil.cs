@@ -18,7 +18,7 @@ namespace SharpDXTest
 
     public static Vector2 Normal(this Vector2 v , Vector2 v2)
     {
-      var temp = (v - v2);
+      Vector2 temp = (v - v2);
       temp.Normalize();
       return new Vector2(-temp.Y , temp.X);
     }
@@ -27,6 +27,7 @@ namespace SharpDXTest
     {
       return Vector3.Dot(v, v2);
     }
+
     public static Vector3 Cross(this Vector3 v, Vector3 v2)
     {
       return Vector3.Cross(v, v2);
@@ -57,7 +58,7 @@ namespace SharpDXTest
 
     public static Vector3 GetNormalized(this Vector3 v)
     {
-      var temp = new Vector3(v.X, v.Y, v.Z);
+      Vector3 temp = new Vector3(v.X, v.Y, v.Z);
       temp.Normalize();
       return temp;
     }
@@ -76,14 +77,17 @@ namespace SharpDXTest
     {
       return ToQuaternion(new Vector3(v.X.Rad(), v.Y.Rad(), v.Z.Rad() ));
     }
+
     public static Vector3 ToV3(this Vector4 v)
     {
       return new Vector3(v.X, v.Y, v.Z);
     }
+
     public static Matrix RotMat(this Quaternion q)
     {
       return Matrix.RotationQuaternion(q);
     }
+
     public static Quaternion FromTo(this Vector3 vFrom, Vector3 vTo)
     {
       // [TODO] this page seems to have optimized version:
@@ -135,6 +139,7 @@ namespace SharpDXTest
       }
       return a.Abs();
     }
+
     public static Vector3 EulerAngle(this Quaternion q)
     {
       float sin = 2.0f * (q.W * q.X + q.Y * q.Z);
@@ -156,6 +161,7 @@ namespace SharpDXTest
       float yaw = (float)Math.Atan2(sinY, cosY);
       return new Vector3(  roll.Deg(),pitch.Deg(),yaw.Deg());
     }
+
     public static Quaternion ToQuaternion(float pitch, float yaw , float roll)
     {
       //https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
@@ -175,11 +181,9 @@ namespace SharpDXTest
       return q;
     }
 
-
-
     public static Matrix CopyMat (this Matrix m)
     {
-      var temp = new Matrix();
+      Matrix temp = new Matrix();
       temp.M11 = m.M11;
       temp.M12 = m.M12;
       temp.M13 = m.M13;
@@ -203,9 +207,10 @@ namespace SharpDXTest
     {
       return Vector3.Transform(v, m);
     }
+
     public static Matrix Inverted(this Matrix m)
     {
-      var temp = m.CopyMat();
+      Matrix temp = m.CopyMat();
       temp.Invert();
       return temp;
     }
@@ -215,54 +220,7 @@ namespace SharpDXTest
       m.Decompose(out Vector3 scale, out Quaternion rot, out Vector3 trans);
       return rot.EulerAngle();
     }
-    /*
-     
-     // スクリーン座標をワールド座標に変換
-D3DXVECTOR3* CalcScreenToWorld(
-   D3DXVECTOR3* pout,
-   int Sx,  // スクリーンX座標
-   int Sy,  // スクリーンY座標
-   float fZ,  // 射影空間でのZ値（0～1）
-   int Screen_w,
-   int Screen_h,
-   D3DXMATRIX* View,
-   D3DXMATRIX* Prj
-) {
-   // 各行列の逆行列を算出
-   D3DXMATRIX InvView, InvPrj, VP, InvViewport;
-   D3DXMatrixInverse( &InvView, NULL, View );
-   D3DXMatrixInverse( &InvPrj, NULL, Prj );
-   D3DXMatrixIdentity( &VP );
-   VP._11 = Screen_w/2.0f; VP._22 = -Screen_h/2.0f;
-   VP._41 = Screen_w/2.0f; VP._42 = Screen_h/2.0f;
-   D3DXMatrixInverse( &InvViewport, NULL, &VP );
 
-   // 逆変換
-   D3DXMATRIX tmp = InvViewport * InvPrj * InvView;
-   D3DXVec3TransformCoord( pout, &D3DXVECTOR3(Sx,Sy,fZ), &tmp );
-
-   return pout;
-}
-
-     */
-    public static Vector3 ScreenToWorld (Vector2 screenPos , float fz,Vector2 screenSize,Matrix View , Matrix Proj)
-    {
-      var invView = View.CopyMat().Inverted();
-      var invProj = Proj.CopyMat().Inverted();
-      var VP = Matrix.Identity;
-      VP.M11 = screenSize.X / 2.0f;
-      VP.M22 = -screenSize.Y / 2.0f;
-      VP.M41 = screenSize.X / 2.0f;
-      VP.M42 = screenSize.Y / 2.0f;
-      var invVP = VP.Inverted();
-      var tmp = invVP * invProj * invView;
-      Vector3 ret = new Vector3(screenPos, fz);
-
-      //Matrix.Transformation()
-      var tr = Matrix.Translation(ret);
-      var t = (tr * tmp).TranslationVector;
-      return t;
-    }
     public static void SetPosition(this TexturedVertex vert ,Vector3 pos)
     {
       vert.Position = pos;

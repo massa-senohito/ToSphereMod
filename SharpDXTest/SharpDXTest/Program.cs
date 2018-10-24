@@ -147,16 +147,12 @@ namespace Platform
 				MessageBox.Show( "DirectX11 Not Supported" );
 				return;
 			}
-			if ( args.Length == 0 )
+			OpenFileDialog openFileDialog = new OpenFileDialog();
+			openFileDialog.Filter = "pmx|*.pmx";
+			if ( openFileDialog.ShowDialog( ) == DialogResult.OK )
 			{
-				Model = new MMDModel( @"miku/mikuCSV.csv" );
-				NormalStart( );
-			}
-			else
-			{
-				MessageBox.Show( args[ 0 ] );
-				string V = args[ 0 ];
-				PMXLoader.WriteTestCSV( V );
+				string V = openFileDialog.FileName;
+				//PMXLoader.WriteTestCSV( V );
 				Model = PMXLoader.Load( V );
 				NormalStart( );
 			}

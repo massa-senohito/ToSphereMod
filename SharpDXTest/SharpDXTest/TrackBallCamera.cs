@@ -107,9 +107,9 @@ public class TrackBallCamera
 {
   Matrix LookAt( Vector3 up)
   {
-    var right = Forward.Cross(up);
+    Vector3 right = Forward.Cross(up);
     right.Normalize();
-    var reculcUp = right.Cross(Forward);
+    Vector3 reculcUp = right.Cross(Forward);
     reculcUp.Normalize();
     return
       //Matrix.LookAtLH(Position, Target, up);
@@ -130,6 +130,7 @@ public class TrackBallCamera
   }
 
   static float FOV = 30;
+
   public Matrix Projection
   {
     get;
@@ -143,7 +144,7 @@ public class TrackBallCamera
   {
     Target = target;
     Position = pos;
-    var dist = Vector3.Distance(Position, Target);
+    float dist = Vector3.Distance(Position, Target);
     Distance = dist;
     View = Matrix.LookAtLH(pos, target, Vector3.UnitY);
     debug = new VDBDebugger();
@@ -160,6 +161,7 @@ public class TrackBallCamera
     return result;
 
   }
+
   public static void Transform(ref Vector3 vec, ref Quaternion quat, out Vector3 result)
 
   {
@@ -194,23 +196,23 @@ public class TrackBallCamera
 
   Vector3 TowardTarget()
   {
-    var lastPosn = Position;
-    var targetPosn = Target;
-    var vecPos = (targetPosn - lastPosn);
+    Vector3 lastPosn = Position;
+    Vector3 targetPosn = Target;
+    Vector3 vecPos = (targetPosn - lastPosn);
     vecPos.Normalize();
     return vecPos;
   }
 
   public void OnResize(float ratio)
   {
-    Projection = Matrix.PerspectiveFovLH(FOV.Rad(), ratio, 0.3F, 1000.0F);
+    Projection = Matrix.PerspectiveFovLH(FOV.Rad(), ratio, 1.0F, 100.0F);
   }
 
   public void Update(Mouse mouse, float delta)
   {
 
-    var mousePosn = mouse.Position;
-    var mouseBtn = mouse.RightClicked;
+    Vector2 mousePosn = mouse.Position;
+    bool mouseBtn = mouse.RightClicked;
     if (mouse.WheelDelta != 0)
     {
       Distance -= mouse.WheelDelta;
@@ -234,14 +236,15 @@ public class TrackBallCamera
     {
       lastMousePosition = null;
     }
+
     if(mouse.MiddleClicked)
     {
-      var mouseDelta = new Vector3(mouse.Delta.X , mouse.Delta.Y , 0) * 0.01f;
-      var right = Forward.Cross(Vector3.UnitY);
-      var reculcUp = right.Cross(Forward);
-      var xVec = right * mouseDelta.X;
-      var yVec = reculcUp * mouseDelta.Y;
-      var movVec = xVec + yVec;
+      Vector3 mouseDelta = new Vector3(mouse.Delta.X , mouse.Delta.Y , 0) * 0.01f;
+      Vector3 right = Forward.Cross(Vector3.UnitY);
+      Vector3 reculcUp = right.Cross(Forward);
+      Vector3 xVec = right * mouseDelta.X;
+      Vector3 yVec = reculcUp * mouseDelta.Y;
+      Vector3 movVec = xVec + yVec;
       Position += movVec;
       Target += movVec;
       SetPosition(Position);
@@ -262,18 +265,19 @@ public class TrackBallCamera
 
   float Theta = 180;
   float Phi = 284;
+
   Vector3 SphericalPos(Mouse mouse)
   {
 
     Theta = Theta.AddDeg( mouse.Delta.X);
     Phi =  Phi.AddDegClamp(mouse.Delta.Y);
    // Util.DebugWrite(Phi.ToString());
-    var t = Theta.Rad();
-    var p = Phi.Rad();
-    var x = Distance * Ma.Sin(p) * Ma.Sin(t);
-    var y = Distance * Ma.Cos(p);
-    var z = Distance * Ma.Sin(p) * Ma.Cos(t);
-    var temp = new Vector3(x, y, z);
+    float t = Theta.Rad();
+    float p = Phi.Rad();
+    float x = Distance * Ma.Sin(p) * Ma.Sin(t);
+    float y = Distance * Ma.Cos(p);
+    float z = Distance * Ma.Sin(p) * Ma.Cos(t);
+    Vector3 temp = new Vector3(x, y, z);
     return temp;
   }
 
