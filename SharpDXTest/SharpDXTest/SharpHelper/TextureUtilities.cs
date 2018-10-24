@@ -870,10 +870,12 @@ namespace SharpHelper
                 bool isCube;
                 return CreateTextureFromDDS(device.Device, device.DeviceContext, System.IO.File.ReadAllBytes(filename), out isCube);
             }
-            if(ext.ToLower() == ".tga")
-      {
-        return CreateTextureFromBitmap(device.Device, device.DeviceContext, TgaReader.Load(filename));
-      }
+
+			if ( ext.ToLower( ) == ".tga" )
+			{
+				return CreateTextureFromBitmap( device.Device , device.DeviceContext , TgaReader.Load( filename ) );
+			}
+
             {
                 return CreateTextureFromBitmap(device.Device, device.DeviceContext, filename);
             }

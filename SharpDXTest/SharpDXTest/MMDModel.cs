@@ -32,7 +32,7 @@ namespace SharpDXTest
 
 		public Material( string line )
 		{
-			var csv = line.Split( ',' );
+			string[] csv = line.Split( ',' );
 			Name = csv[ 1 ];
 			TexName = csv[ 26 ];
 			TexName = TexName.Replace( "\"" , "" );
@@ -117,7 +117,7 @@ namespace SharpDXTest
 
 		SharpMesh GetSharpMesh( SharpDevice device )
 		{
-			var mesh = new SharpMesh( device );
+			SharpMesh mesh = new SharpMesh( device );
 			List<int> indices = new List<int>( );
 			List<Face> faces = new List<Face>( );
 			List<string> texList = new List<string>( );
@@ -158,14 +158,7 @@ namespace SharpDXTest
 			var inds = Index.Select( x => x.ToString( ) );
 			var facesS = Faces.Select( x => x.ToString( ) );
 			//inds.Concat( facesS ).Concat( texList ).WriteFile( DirPath + "loadedFile.txt" );
-			//Faces = new Face[Index.Length / 3];
-			//for (int i = 0; i < Index.Length; i += 3)
-			//{
-			//  Face face = new Face(Vertice[Index[i]].Position, Vertice[Index[i + 1]].Position, Vertice[Index[i + 2]].Position, "");
-			//    Debug.WriteLine("second " + face.TriString);
-			//  Faces[i / 3] = face;
-			//}
-			// 毎フレーム送るにはおもすぎる
+
 			ModelStr = Faces.Select( f => f.TriString ).ConcatStr( );
 			mesh.SetOnly( Vertice , Index );
 			return mesh;
@@ -175,12 +168,16 @@ namespace SharpDXTest
 		{
 			DirPath = Directory.GetParent( path ).FullName;
 			string[] lines = File.ReadAllLines( path );
+			//;Face,親材質名,面Index,頂点Index1,頂点Index2,頂点Index3
+			//Face,"スカート腕ヘドフォン",0,858,840,855
+			// のように最初の文字列がVertexだと頂点 Faceだと面になる ;が最初に来るものは説明用のものなので弾く
 			var gr = lines.GroupBy( l => l.Split( ',' )[ 0 ] );
 			var gs = gr.Where( g => !g.Key.Contains( ";" ) ).ToDictionary( s => s.Key , g => g.ToList( ) );
 
 			Vertice = ParseCSV( gs[ "Vertex" ] ).ToArray( );
 			OrigVertice = new Vert[ Vertice.Length ];
 			Vertice.ArrayFullCopy( OrigVertice );
+			// 次の文字列は材質名になるので、材質名のグループを作る
 			var faceGr = gs[ "Face" ].GroupBy( s => s.Split( ',' )[ 1 ] ).ToDictionary( s => s.Key , g => g.ToList( ) );
 			Materials = Material.MakeFromCSV( gs[ "Material" ] , faceGr , Vertice );
 
@@ -305,12 +302,12 @@ namespace SharpDXTest
 
 		public void OnFactorChanged( float factor )
 		{
-			Cast.fac = factor;
+			Cast.Fac = factor;
 		}
 
 		public void OnRadiusChanged( float radius )
 		{
-			Cast.radius = radius;
+			Cast.Radius = radius;
 		}
 
 		public string ModelStr
@@ -336,13 +333,14 @@ namespace SharpDXTest
 
 			// ミラーの場合、元のモデルに対して変更を行うと上書きになってしまう
 			// 順序が生まれてしまうが、変更後に対して作用させる
-			var vs = add ?
-			  Vertice.Select( v => v.Position ).ToArray( ) :
+			var originalVertPos = add ?
+			  Vertice    .Select( v => v.Position ).ToArray( ) :
 			  OrigVertice.Select( v => v.Position ).ToArray( );
-			var vd = Cast.GetSpereUntilEnd( vs );
-			for ( int i = 0 ; i < vd.Length ; i++ )
+
+			Vector3[] castedVertice = Cast.GetSpereUntilEnd( originalVertPos );
+			for ( int i = 0 ; i < castedVertice.Length ; i++ )
 			{
-				Vertice[ i ].Position = vd[ i ];
+				Vertice[ i ].Position = castedVertice[ i ];
 			}
 			Mesh.SetOnly( Vertice , Index.ToArray( ) );
 		}

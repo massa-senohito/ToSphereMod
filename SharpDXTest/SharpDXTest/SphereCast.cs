@@ -12,138 +12,101 @@ using V3 = SharpDX.Vector3;
 
 namespace BlenderModifier
 {
-  //\blender\source\blender\modifiers\intern\MOD_cast.c
-  public class SphereCast
-  {
-    public float fac = 0.3f;
-    public float radius = 2f;
-    float len;
-    public float size;
-    public Matrix Pivot;
-    public V3 Offset;
-    Matrix TempMatrix;
-    Matrix InvercePivot;
-    int endt;
-    V3[] SphereVertice;
-    int length = 8;
+	//\blender\source\blender\modifiers\intern\MOD_cast.c
+	public class SphereCast
+	{
+		public float Fac = 0.3f;
+		public float Radius = 2f;
+		float Len;
+		public float Size;
+		public Matrix Pivot;
+		public V3 Offset;
+		Matrix TempMatrix;
+		Matrix InvercePivot;
+		V3[] SphereVertice;
 
-    public void StartDeform(V3[] OriginalVertice)
-    {
-      Matrix ObjectMatrix = Matrix.Identity;
-      Matrix InverceObject = Matrix.Identity;
-      var offsetPivot = Matrix.Translation(Offset) + Pivot;
-      //if (flag & MOD_CAST_USE_OB_TRANSFORM) {
-      {
-        InvercePivot = offsetPivot.Inverted();
+		public void StartDeform( V3[] OriginalVertice )
+		{
+			Matrix objectMatrix = Matrix.Identity;
+			Matrix InverceObject = Matrix.Identity;
+			Matrix offsetPivot = Matrix.Translation( Offset ) + Pivot;
 
-        TempMatrix = InvercePivot * ObjectMatrix;
+			// 軸のオブジェクトを中心として使用するため必ず通す
+			//if (flag & MOD_CAST_USE_OB_TRANSFORM)
+			{
+				InvercePivot = offsetPivot.Inverted( );
 
-        InvercePivot = TempMatrix.Inverted();
-      }
-      InverceObject = ObjectMatrix.Inverted();
-      V3 center = InverceObject.TransByMat(offsetPivot.TranslationVector).ToV3();
+				TempMatrix = InvercePivot * objectMatrix;
 
-      var pivot = offsetPivot.TranslationVector;
-      var ovs = OriginalVertice;
-      len = size < float.Epsilon ? radius : size;
-      // todo
-      if (len <= 0)
-      {
-        len += ovs.Aggregate(0.0f, (acc, v) => acc += Vector3.Distance(v, center)) / ovs.Length;
-      }
-      //PmdWeightAuto.PmxUtil.BoneAttitude() は外から
-      //modifier_get_vgroup(ob, dm, cmd->defgrp_name, &dvert, &defgrp_index);
-#if CPU8
-      for (int i = 0; i < length; i++)
-      {
-        ThreadPool.QueueUserWorkItem(id => cpuVShader(OriginalVertice, (int)id, length), i);
-      }
-#else
-      NocpuVShader(OriginalVertice);
+				InvercePivot = TempMatrix.Inverted( );
+			}
+			InverceObject = objectMatrix.Inverted( );
+			V3 center = InverceObject.TransByMat( offsetPivot.TranslationVector ).ToV3( );
 
-#endif
-    }
-    public SphereCast(Matrix pivot)
-    {
-      Pivot = pivot;
-    }
-    public V3[] GetSpereUntilEnd(V3[] ovs)
-    {
-      SphereVertice = ovs;
-      StartDeform(ovs);
-#if CPU8
-      while (true)
-      {
-        if (endt%length==0 && endt!=0) return SphereVertice;
-        Thread.Sleep(1);
-      }
-#else
-      return SphereVertice;
-#endif
+			V3 pivot = offsetPivot.TranslationVector;
+			V3[] ovs = OriginalVertice;
+			Len = Size < float.Epsilon ? Radius : Size;
+			// blenderではあまり良い結果にならなかったためsizeは対応しない
+			if ( Len <= 0 )
+			{
+				Len += ovs.Aggregate( 0.0f , ( acc , v ) => acc += Vector3.Distance( v , center ) ) / ovs.Length;
+			}
+			//modifier_get_vgroup(ob, dm, cmd->defgrp_name, &dvert, &defgrp_index);
 
-    }
+			VerticeProc( OriginalVertice );
 
-    void cpuVShader(V3[] vs, int id, int count)
-    {
+		}
 
-      var lenc = vs.Length / count;
-      // 負荷分散
-      var start = id * lenc;
+		public SphereCast( Matrix pivot )
+		{
+			Pivot = pivot;
+		}
 
-      for (int i = start; i < start + lenc; i++)
-      {
+		public V3[] GetSpereUntilEnd( V3[] ovs )
+		{
+			SphereVertice = ovs;
+			StartDeform( ovs );
 
-        var tmpCo = vs[i];
-        {
-          //\blenderSource\blender\source\blender\blenlib\BLI_math_matrix.h
-          tmpCo = TempMatrix.TransByMat(tmpCo).ToV3();
-        }
-        if (i >= vs.Length) break;
-        if (tmpCo.Length() > radius) continue;
-        var vec = tmpCo;
-        var facm = 1.0f - fac;
+			return SphereVertice;
+		}
 
-        var nv = vec.GetNormalized();
-        tmpCo = nv * len * fac + tmpCo * facm;
-        {
-          tmpCo = InvercePivot.TransByMat(tmpCo).ToV3();
-        }
-        SphereVertice[i] = tmpCo;
-      }
-      endt++;
-    }
 
-    void NocpuVShader(V3[] vs)//, int id, int count)
-    {
+		void VerticeProc( V3[] vs )
+		{
 
-      var lenc = vs.Length;
-      var start = 0;
+			int lenc = vs.Length;
+			int start = 0;
 
-      for (int i = start; i < lenc; i++)
-      {
+			for ( int i = start ; i < lenc ; i++ )
+			{
 
-        var tmpCo = vs[i];
-        {
-          //\blenderSource\blender\source\blender\blenlib\BLI_math_matrix.h
-          tmpCo = TempMatrix.TransByMat(tmpCo).ToV3();
-          var t = TempMatrix.TranslationVector;
-        }
-        if (i >= vs.Length) break;
-        if (tmpCo.Length() > radius) continue;
-        var debtmpCo = tmpCo;
-        var vec = new V3(tmpCo.X, tmpCo.Y, tmpCo.Z);
-        var facm = 1.0f - fac;
+				V3 tmpCo = vs[ i ];
+				{
+					//\blenderSource\blender\source\blender\blenlib\BLI_math_matrix.h
+					// 軸オブジェクト中心の座標系に頂点を持っていく
+					tmpCo = TempMatrix.TransByMat( tmpCo ).ToV3( );
+					V3 t = TempMatrix.TranslationVector;
+				}
+				if ( i >= vs.Length )
+				{
+					break;
+				}
+				if ( tmpCo.Length( ) > Radius )
+				{
+					continue;
+				}
+				V3 vec = new V3( tmpCo.X , tmpCo.Y , tmpCo.Z );
+				float facm = 1.0f - Fac;
 
-        var nv = vec.GetNormalized();
-        tmpCo = nv * len * fac + tmpCo * facm;
-        {
-          tmpCo = InvercePivot.TransByMat(tmpCo).ToV3();
-        }
-        SphereVertice[i] = tmpCo;
-      }
-      endt++;
-    }
-  }
-
+				V3 nv = vec.GetNormalized( );
+				tmpCo = nv * Len * Fac + tmpCo * facm;
+				{
+					// 軸中心の座標系頂点を元の位置に戻す
+					tmpCo = InvercePivot.TransByMat( tmpCo ).ToV3( );
+				}
+				SphereVertice[ i ] = tmpCo;
+			}
+		}
+	}
 
 }

@@ -18,15 +18,18 @@ namespace SharpHelper
 
         private int n1;
         private long timeout;
-    public int FrameCount { get; private set; }
-    private long pretime;
-    public long Delta
-    {
-      get
-      {
-        return watch.ElapsedMilliseconds - pretime;
-      }
-    }
+		public int FrameCount
+		{
+			get; private set;
+		}
+		private long pretime;
+		public long Delta
+		{
+			get
+			{
+				return watch.ElapsedMilliseconds - pretime;
+			}
+		}
         private System.Diagnostics.Stopwatch watch;
 
         /// <summary>
@@ -56,8 +59,8 @@ namespace SharpHelper
         public void Update()
         {
             n1++;
-      pretime = watch.ElapsedMilliseconds;
-      FrameCount++;
+			pretime = watch.ElapsedMilliseconds;
+			FrameCount++;
             if (watch.ElapsedMilliseconds - timeout >= 1000)
             {
                 FPS = n1;

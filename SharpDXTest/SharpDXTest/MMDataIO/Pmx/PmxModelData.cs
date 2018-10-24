@@ -190,7 +190,7 @@ namespace MMDataIO.Pmx
                     break;
 
                 case 2:
-                    id = reader.ReadInt16();
+                    id = reader.ReadUInt16();
                     break;
 
                 case 4:

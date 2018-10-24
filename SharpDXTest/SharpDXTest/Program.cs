@@ -41,7 +41,7 @@ namespace Platform
 
 		static void OnResizeForm( float ratio , SharpDevice device )
 		{
-			var viewports = device.DeviceContext.Rasterizer.GetViewports<ViewportF>( );
+			ViewportF[] viewports = device.DeviceContext.Rasterizer.GetViewports<ViewportF>( );
 			Viewport = viewports[ 0 ];
 			Camera.OnResize( ratio );
 		}
@@ -57,7 +57,7 @@ namespace Platform
 			device.Font.DrawString( "FPS: " + FpsCounter.FPS , 0 , 0 );
 
 			CameraRay = new RayWrap( Ray.GetPickRay( ( int )Clicked.X , ( int )Clicked.Y , Viewport , View * Projection ) );
-			var currentRay = new RayWrap( Ray.GetPickRay( ( int )Mouse.Position.X , ( int )Mouse.Position.Y , Viewport , View * Projection ) );
+			RayWrap currentRay = new RayWrap( Ray.GetPickRay( ( int )Mouse.Position.X , ( int )Mouse.Position.Y , Viewport , View * Projection ) );
 			device.Font.DrawString( "mouse: " + CameraRay.From , 0 , 30 );
 			device.Font.DrawString( "mouseto: " + CameraRay.To , 0 , 60 );
 			Debug.vdb_label( "model" );
@@ -229,13 +229,13 @@ namespace Platform
 
 		private static void Form_MouseWheel( object sender , MouseEventArgs e )
 		{
-			var startRay = new RayWrap( Ray.GetPickRay( e.X , e.Y , Viewport , View * Projection ) );
+			RayWrap startRay = new RayWrap( Ray.GetPickRay( e.X , e.Y , Viewport , View * Projection ) );
 			Mouse.OnMouseMove( e , startRay );
 		}
 
 		private static void Form_MouseMove( object sender , MouseEventArgs e )
 		{
-			var startRay = new RayWrap( Ray.GetPickRay( e.X , e.Y , Viewport , View * Projection ) );
+			RayWrap startRay = new RayWrap( Ray.GetPickRay( e.X , e.Y , Viewport , View * Projection ) );
 			Mouse.OnMouseMove( e , startRay );
 		}
 

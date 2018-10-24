@@ -51,10 +51,12 @@ namespace SharpDXTest
 			int matIndex = 0;
 			List<int> ranges = IndexRange( model ).ToList( );
 			int start = 0;
+
 			if ( ind > 0 )
 			{
 				start = ranges[ ind - 1 ];
 			}
+
 			for ( int i = start ; i < ranges[ind] ; i += 3 )
 			{
 
@@ -63,6 +65,7 @@ namespace SharpDXTest
 					matIndex++;
 					FaceCount = 0;
 				}
+
 				yield return
 					new int[] {
 					model.VertexIndices[ i ] ,
@@ -107,9 +110,9 @@ namespace SharpDXTest
 
 		public static MMDModel Load( string path )
 		{
-			using ( var sr = new FileStream( path , FileMode.Open , FileAccess.Read ) )
+			using ( FileStream sr = new FileStream( path , FileMode.Open , FileAccess.Read ) )
 			{
-				using ( var bin = new BinaryReader( sr ) )
+				using ( BinaryReader bin = new BinaryReader( sr ) )
 				{
 					PmxModelData model = new PmxModelData( bin );
 					var vert = model.VertexArray.Select( GetVert ).ToArray();
@@ -123,9 +126,9 @@ namespace SharpDXTest
 		public static void WriteTestCSV( string arg )
 		{
 			// todo softbodyなどが無視されている
-			using ( var sr = new FileStream( arg , FileMode.Open , FileAccess.Read ) )
+			using ( FileStream sr = new FileStream( arg , FileMode.Open , FileAccess.Read ) )
 			{
-				using ( var bin = new BinaryReader( sr ) )
+				using ( BinaryReader bin = new BinaryReader( sr ) )
 				{
 					PmxModelData model = new PmxModelData( bin );
 					var vert = model.VertexArray.Select( x => x.Pos.ToString( ) );
