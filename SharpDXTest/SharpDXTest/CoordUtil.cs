@@ -16,6 +16,11 @@ namespace SharpDXTest
 			return new Vector3( -v.X , v.Y , v.Z );
 		}
 
+		public static string Csv( this Vector3 v )
+		{
+			return v.X + "," + v.Y + "," + v.Z;
+		}
+
 		public static Vector2 Normal( this Vector2 v , Vector2 v2 )
 		{
 			Vector2 temp = ( v - v2 );

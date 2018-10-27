@@ -49,16 +49,17 @@ namespace Platform
 
 		static void PostViewUpdate( SharpDevice device )
 		{
+			FpsCounter.Update( );
+			CameraRay = new RayWrap( Ray.GetPickRay( ( int )Clicked.X , ( int )Clicked.Y , Viewport , View * Projection ) );
+			RayWrap currentRay = new RayWrap( Ray.GetPickRay( ( int )Mouse.Position.X , ( int )Mouse.Position.Y , Viewport , View * Projection ) );
 #if FONT
+			// 最小化したときフォントがなくなることがあった
 			//begin drawing text
 			device.Font.Begin( );
 
 			//draw string
-			FpsCounter.Update( );
 			device.Font.DrawString( "FPS: " + FpsCounter.FPS , 0 , 0 );
 
-			CameraRay = new RayWrap( Ray.GetPickRay( ( int )Clicked.X , ( int )Clicked.Y , Viewport , View * Projection ) );
-			RayWrap currentRay = new RayWrap( Ray.GetPickRay( ( int )Mouse.Position.X , ( int )Mouse.Position.Y , Viewport , View * Projection ) );
 			device.Font.DrawString( "mouse: " + CameraRay.From , 0 , 30 );
 			device.Font.DrawString( "mouseto: " + CameraRay.To , 0 , 60 );
 			Debug.vdb_label( "model" );
@@ -66,19 +67,24 @@ namespace Platform
 			Debug.vdb_label( "ray" );
 			Debug.Send( CameraRay.RayStr );
 
+#endif
 			var hits = Axis.HitPos( CameraRay ).ToArray( );
 			for ( int j = 0 ; j < hits.Count( ) ; j++ )
 			{
 				Debug.vdb_label( "hit" );
 				Debug.Send( hits[ j ].HitPosition.DebugStr( ) );
+#if FONT
 				device.Font.DrawString( "hit: " + hits[ j ].Info , 0 , 90 + 30 * j );
+#endif
 			}
 			Axis.OnClicked( Mouse , currentRay );
+			ModForm.SetOffset( Axis.Position );
 #if DEBUGLINE
 			//line.OnClicked(mouse, currentRay);
 			//line.SetLine(Camera.Position + Camera.Forward * 10, Camera.Position + Camera.View.Right * 10);
 			//line.SetLine(new Vector3(2,-12,-12), new Vector3(-8,8,10));
 #endif
+#if FONT
 			//flush text to view
 			device.Font.End( );
 #endif
@@ -99,6 +105,7 @@ namespace Platform
 			ModForm.SetFactorBoxChanged( OnFactorTextChanged );
 			ModForm.SetRadiusBoxChanged( OnFactorTextChanged );
 			ModForm.SetAlphaBarChanged( OnAlphaBarChanged );
+			ModForm.SetOffsetBoxChanged( OnOffsetBoxChanged );
 			//frame rate counter
 			#region addEvent
 			Form.MouseClick += Form_MouseClick;
@@ -261,10 +268,18 @@ namespace Platform
 			Model.OnFactorChanged( ModForm.Factor );
 			Model.OnRadiusChanged( ModForm.Radius );
 		}
+
 		private static void OnAlphaBarChanged( object sender , EventArgs e )
 		{
 			Axis.Alpha = ModForm.Alpha;
 		}
+
+		private static void OnOffsetBoxChanged( object sender , EventArgs e )
+		{
+			var offset = ModForm.GetOffset( );
+			offset.Match( () => { } , off => Axis.Position = off);
+		}
+
 	}
 }
 

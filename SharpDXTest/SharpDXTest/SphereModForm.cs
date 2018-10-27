@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SharpDXTest;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -58,12 +59,30 @@ namespace BlenderModifier
 			UIAlphaBar.ValueChanged += f;
 		}
 
-		public V3 GetOffset()
+		public void SetOffset( V3 v3 )
+		{
+			// モデル頂点位置が変更されるのでフォーカスを失って正常に文字入力できなくなる
+			if ( !OffsetBox.Focused )
+			{
+				OffsetBox.Text = v3.Csv( );
+			}
+		}
+
+		public Option< V3 > GetOffset()
 		{
 			string tmp = OffsetBox.Text;
 			string[] arr = tmp.Split( ',' );
-			var flArr = arr.Select( float.Parse ).ToArray( );
-			return new V3( flArr[ 0 ] , flArr[ 1 ] , flArr[ 2 ] );
+			try
+			{
+
+				var flArr = arr.Select( float.Parse ).ToArray( );
+				return Option.Return( new V3( flArr[ 0 ] , flArr[ 1 ] , flArr[ 2 ] ) );
+			}
+			catch ( Exception e )
+			{
+				return Option.Return<V3>( );
+			}
+
 		}
 
 		public int BoneID

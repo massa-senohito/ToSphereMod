@@ -121,6 +121,7 @@ namespace SharpDXTest
 			List<int> indices = new List<int>( );
 			List<Face> faces = new List<Face>( );
 			List<string> texList = new List<string>( );
+			List<string> notFoundTexList = new List<string>( );
 			int icount = 0;
 			foreach ( Material item in Materials )
 			{
@@ -136,9 +137,18 @@ namespace SharpDXTest
 				if ( item.TexName != string.Empty )
 				{
 					string filename = DirPath + Path.DirectorySeparatorChar + item.TexName;
-					subSet.DiffuseMap = device.LoadTextureFromFile( filename );
-					texList.Add( filename );
+					// 存在しないパスなら読まない
+					if ( File.Exists( filename ) )
+					{
+						subSet.DiffuseMap = device.LoadTextureFromFile( filename );
+						texList.Add( filename );
+					}
+					else
+					{
+						notFoundTexList.Add( filename );
+					}
 				}
+
 				mesh.SubSets.Add( subSet );
 
 				for ( int i = icount ; i < icount + faceCount ; i += 3 )
@@ -158,6 +168,7 @@ namespace SharpDXTest
 			var inds = Index.Select( x => x.ToString( ) );
 			var facesS = Faces.Select( x => x.ToString( ) );
 			//inds.Concat( facesS ).Concat( texList ).WriteFile( DirPath + "loadedFile.txt" );
+			notFoundTexList.WriteFile( DirPath + "notFoundTextures.txt" );
 
 			ModelStr = Faces.Select( f => f.TriString ).ConcatStr( );
 			mesh.SetOnly( Vertice , Index );
@@ -234,6 +245,7 @@ namespace SharpDXTest
 			set
 			{
 				World.TranslationVector = value;
+
 				//Util.DebugWrite(World.TransByMat(Vector3.UnitX).ToString());
 				foreach ( Face i in Faces )
 				{
