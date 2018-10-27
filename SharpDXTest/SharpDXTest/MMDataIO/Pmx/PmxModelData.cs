@@ -24,6 +24,19 @@ namespace MMDataIO.Pmx
 		{
 		}
 
+		public void AddVertMorph(string morphName, IEnumerable<PmxMorphVertexData> morphs )
+		{
+			var list = MorphArray.ToList( );
+			list.Add( new PmxMorphData( )
+			{
+				MorphName = morphName ,
+				MorphType = MorphType.VERTEX ,
+				SlotType = MorphSlotType.EYE ,
+				MorphArray = morphs.Cast<IPmxMorphTypeData>().ToArray()
+			} );
+			MorphArray = list.ToArray( );
+		}
+
 		public PmxModelData( BinaryReader path )
 		{
 			Read( path );

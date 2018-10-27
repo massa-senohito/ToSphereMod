@@ -21,7 +21,12 @@ namespace MMDataIO.Pmx
             MorphArray = CloneUtil.CloneArray(MorphArray),
         };
 
-        public void Write(BinaryWriter writer, PmxHeaderData header)
+		public override string ToString()
+		{
+			return MorphName;
+		}
+
+		public void Write(BinaryWriter writer, PmxHeaderData header)
         {
             writer.WriteText(header.Encoding, MorphName);
             writer.WriteText(header.Encoding, MorphNameE);

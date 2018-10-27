@@ -199,7 +199,12 @@ namespace MMDataIO.Pmx
         public void ReadPmd(BinaryReader reader, PmxHeaderData header)
         {
         }
-    }
+
+		public override string ToString()
+		{
+			return "VertexMorph,\"testc\"," +Index.ToString( ) + "," + Position.X +"," + Position.Y + "," + Position.Z;
+		}
+	}
 
     [Serializable]
     public struct PmxMorphImpulseData : IPmxMorphTypeData

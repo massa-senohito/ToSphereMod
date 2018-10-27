@@ -22,6 +22,7 @@ namespace Platform
 	{
 
 		public static MMDModel Model;
+		static PMXLoader LoadedFromDialog;
 		static DraggableAxis Axis = new DraggableAxis( "axis/axis.csv" );
 		static DebugLine Line = new DebugLine( "line/line.csv" );
 		static Vector2 Clicked = Vector2.Zero;
@@ -104,6 +105,7 @@ namespace Platform
 			Form.MouseMove += Form_MouseMove;
 			Form.MouseWheel += Form_MouseWheel;
 			Form.KeyUp += Form_KeyUp;
+			Form.FormClosed += Form_FormClosed;
 			;
 			Debug = new VDBDebugger( );
 			#endregion
@@ -135,6 +137,15 @@ namespace Platform
 			}
 		}
 
+		private static void Form_FormClosed( object sender , FormClosedEventArgs e )
+		{
+			var morphs = Model.DifferVert( );
+			//morphs.Select(x=>x.ToString()).WriteFile("MorphSentaiMiku.txt");
+			// 枠が不正になる
+			LoadedFromDialog.PmxModelData.AddVertMorph( "testc" , morphs );
+			LoadedFromDialog.WriteUpdated( );
+		}
+
 		/// <summary>
 		/// The main entry point for the application.
 		/// </summary>
@@ -153,7 +164,8 @@ namespace Platform
 			{
 				string V = openFileDialog.FileName;
 				//PMXLoader.WriteTestCSV( V );
-				Model = PMXLoader.Load( V );
+				LoadedFromDialog = new PMXLoader( V );
+				Model = LoadedFromDialog.MMDModel;
 				NormalStart( );
 			}
 

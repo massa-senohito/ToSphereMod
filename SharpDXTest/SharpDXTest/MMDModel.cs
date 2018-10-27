@@ -345,6 +345,21 @@ namespace SharpDXTest
 			Mesh.SetOnly( Vertice , Index.ToArray( ) );
 		}
 
+		public IEnumerable<MMDataIO.Pmx.PmxMorphVertexData> DifferVert()
+		{
+			for ( int i = 0 ; i < Vertice.Length ; i++ )
+			{
+				int ind = i;
+				Vector3 origPos = OrigVertice[ ind ].Position;
+				Vector3  curPos = Vertice[ ind ].Position;
+				if ( !origPos.Equals( curPos ) )
+				{
+					yield return new MMDataIO.Pmx.PmxMorphVertexData( )
+						{ Index = ind , Position = curPos - origPos };
+				}
+			}
+		}
+
 		public IEnumerable<HitResult> HitPos( RayWrap ray )
 		{
 			foreach ( Face item in Faces )

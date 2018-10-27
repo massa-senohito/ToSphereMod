@@ -112,19 +112,30 @@ namespace SharpDXTest
 			}
 		}
 
-		public static MMDModel Load( string path )
+		public PmxModelData PmxModelData;
+		public MMDModel MMDModel;
+		public string Path;
+
+		public PMXLoader( string path )
 		{
 			using ( FileStream sr = new FileStream( path , FileMode.Open , FileAccess.Read ) )
 			{
 				using ( BinaryReader bin = new BinaryReader( sr ) )
 				{
-					PmxModelData model = new PmxModelData( bin );
-					var vert = model.VertexArray.Select( GetVert ).ToArray();
-					IEnumerable<Material> mats = GetMat( model );
+					PmxModelData = new PmxModelData( bin );
+					Path = path;
+					//PmxModelData.Write( path + "ex.pmx" );
+					var vert = PmxModelData.VertexArray.Select( GetVert ).ToArray();
+					IEnumerable<Material> mats = GetMat( PmxModelData );
 					string parent = Directory.GetParent( path ).FullName;
-					return new MMDModel( vert , mats , parent );
+					MMDModel = new MMDModel( vert , mats , parent );
 				}
 			}
+		}
+
+		public void WriteUpdated()
+		{
+			PmxModelData.Write( Path + "ex.pmx" );
 		}
 
 		public static void WriteTestCSV( string arg )
