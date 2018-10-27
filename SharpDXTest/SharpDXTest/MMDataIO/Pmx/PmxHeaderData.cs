@@ -19,9 +19,18 @@ namespace MMDataIO.Pmx
 
         public Encoding Encoding { get; set; } = Encoding.GetEncoding("utf-16");
         public byte NumberOfExtraUv { get; set; }
-        public byte VertexIndexSize { get; set; }
-        public byte TextureIndexSize { get; set; }
-        public byte MaterialIndexSize { get; set; }
+        public byte VertexIndexSize
+		{
+			get; set;
+		}
+        public byte TextureIndexSize
+		{
+			get; set;
+		}
+        public byte MaterialIndexSize
+		{
+			get; set;
+		}
         public byte BoneIndexSize { get; set; }
         public byte MorphIndexSize { get; set; }
         public byte RigidIndexSize { get; set; }

@@ -120,8 +120,8 @@ namespace MMDataIO.Pmx
                 writer.Write(AngleLimit);
 
                 int boneNum = IkChilds.Length;
-
-                for (int i = 0; i < boneNum; i++)
+				writer.Write( boneNum );
+				for (int i = 0; i < boneNum; i++)
                 {
                     IkChilds[i].Write(writer, header);
                 }
