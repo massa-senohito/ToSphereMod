@@ -80,7 +80,7 @@ namespace SharpDXTest
 
 		static TexturedVertex GetVert( PmxVertexData vert )
 		{
-			return new TexturedVertex( vert.Pos , vert.Uv );
+			return new TexturedVertex( vert.Pos , vert.Normal , vert.Uv );
 		}
 
 		static TexturedVertex GetVert( PmxModelData model , int vertId )
@@ -94,13 +94,19 @@ namespace SharpDXTest
 			var faceIndex = IndiceByMaterial( model , matInd);
 			var flattenFace = faceIndex.SelectMany( x => x ).Select( x => GetVert( model , x ) );
 			string texName = string.Empty;
+			string sphereName = string.Empty;
 
 			// テクスチャがない場合255が使われる
 			if ( data.TextureId != 255 )
 			{
 				texName = model.TextureFiles[ data.TextureId ];
 			}
-			Material temp = new Material( data.MaterialName , texName , flattenFace , faceIndex );
+			if ( data.SphereId != 255 )
+			{
+				sphereName = model.TextureFiles[ data.SphereId ];
+			}
+			Material temp = 
+				new Material( data.MaterialName , texName , sphereName , flattenFace , faceIndex );
 			return temp;
 		}
 

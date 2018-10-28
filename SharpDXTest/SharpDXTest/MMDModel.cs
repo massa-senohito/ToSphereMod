@@ -23,6 +23,7 @@ namespace SharpDXTest
 		public string Name;
 
 		public string TexName;
+		public string SphereName;
 
 		public IEnumerable<Vert> Vertice;
 
@@ -40,10 +41,11 @@ namespace SharpDXTest
 		//      Pmx.Material[0].Faces[0].Vertex1.Position
 
 		// PMXEditorから持って来る用
-		public Material( string name , string texName , IEnumerable<Vert> vertice , IEnumerable<int[]> faces )
+		public Material( string name , string texName , string sphereName , IEnumerable<Vert> vertice , IEnumerable<int[]> faces )
 		{
 			Name = name;
 			TexName = texName;
+			SphereName = sphereName;
 			Vertice = vertice;
 			Faces = faces;
 			FlattenFace = Faces.SelectMany( x => x ).ToArray( );
@@ -86,9 +88,16 @@ namespace SharpDXTest
 		public Matrix WorldViewProjection;
 
 		[FieldOffset( 64 )]
+		public Matrix ViewProjection;
+
+		[FieldOffset( 128 )]
+		public Matrix World;
+
+		[FieldOffset( 128 + 64 )]
 		public float Alpha;
+		
 		// 2の乗数（128bit）でないと例外が起きるので詰め物をする
-		[FieldOffset( 128 - 4 )]
+		[FieldOffset( 512 - 4 )]
 		public float NULL;
 	}
 
@@ -115,6 +124,20 @@ namespace SharpDXTest
 			get;
 		}
 
+		Option<ShaderResourceView> TryGetResource(SharpDevice device , string path )
+		{
+
+			string filename = DirPath + Path.DirectorySeparatorChar + path;
+			if ( File.Exists( filename ) )
+			{
+				return Option.Return(device.LoadTextureFromFile(filename));
+			}
+			else
+			{
+				return Option.Return<ShaderResourceView>( );
+			}
+		}
+
 		SharpMesh GetSharpMesh( SharpDevice device )
 		{
 			SharpMesh mesh = new SharpMesh( device );
@@ -136,17 +159,15 @@ namespace SharpDXTest
 
 				if ( item.TexName != string.Empty )
 				{
-					string filename = DirPath + Path.DirectorySeparatorChar + item.TexName;
+					var filename = TryGetResource(device,item.TexName);
 					// 存在しないパスなら読まない
-					if ( File.Exists( filename ) )
-					{
-						subSet.DiffuseMap = device.LoadTextureFromFile( filename );
-						texList.Add( filename );
-					}
-					else
-					{
-						notFoundTexList.Add( filename );
-					}
+					filename.Match( () => notFoundTexList.Add( item.TexName ) , r => subSet.DiffuseMap = r );
+				}
+
+				if ( item.SphereName != string.Empty )
+				{
+					var filename = TryGetResource(device,item.SphereName);
+					filename.Match( () => notFoundTexList.Add( item.SphereName) , r => subSet.SphereMap = r );
 				}
 
 				mesh.SubSets.Add( subSet );
@@ -226,7 +247,8 @@ namespace SharpDXTest
 				new SharpShaderDescription( ) { VertexShaderFunction = "VS" , PixelShaderFunction = "PS" } ,
 				new InputElement[] {
 						new InputElement("POSITION", 0, Format.R32G32B32_Float, 0, 0),
-						new InputElement("TEXCOORD", 0, Format.R32G32_Float, 12, 0)
+						new InputElement("NORMAL"  , 0, Format.R32G32B32_Float, 12, 0),
+						new InputElement("TEXCOORD", 0, Format.R32G32_Float, 24, 0)
 				} );
 			GPUDataBuffer = Shader.CreateBuffer<GPUData>( );
 			VertexShader = device.DeviceContext.VertexShader;
@@ -301,15 +323,22 @@ namespace SharpDXTest
 			PixelShader.SetConstantBuffer( 0 , GPUDataBuffer );
 			Matrix worldViewProjection = World * ViewProjection;
 			GpuData.WorldViewProjection = worldViewProjection;
+			GpuData.World = World;
+			GpuData.ViewProjection = ViewProjection;
 			device.UpdateData( GPUDataBuffer , GpuData );
 			Mesh.Begin( );
 			for ( int i = 0 ; i < Mesh.SubSets.Count ; i++ )
 			{
-				device.DeviceContext.PixelShader.SetShaderResource( 0 , Mesh.SubSets[ i ].DiffuseMap );
+				SharpSubSet sharpSubSet = Mesh.SubSets[ i ];
+				device.DeviceContext.PixelShader.SetShaderResource( 0 , sharpSubSet.DiffuseMap );
+				if ( sharpSubSet.SphereMap != null )
+				{
+					device.DeviceContext.PixelShader.SetShaderResource( 1 , sharpSubSet.SphereMap );
+				}
 				//set texture
 				Mesh.Draw( i );
 			}
-
+			// https://gamedev.stackexchange.com/questions/49779/different-shaders-for-different-objects-directx-11
 		}
 
 		public void OnFactorChanged( float factor )
@@ -335,7 +364,10 @@ namespace SharpDXTest
 			foreach ( string item in lines )
 			{
 				var csv = item.Split( ',' );
-				yield return new Vert( new Vector3( csv[ 2 ].Float( ) , csv[ 3 ].Float( ) , csv[ 4 ].Float( ) ) , new Vector2( csv[ 9 ].Float( ) , csv[ 10 ].Float( ) ) );
+				yield return new Vert(
+					new Vector3( csv[ 2 ].Float( ) , csv[ 3 ].Float( ) , csv[ 4 ].Float( ) ) ,
+					new Vector3( csv[ 5 ].Float( ) , csv[ 6 ].Float( ) , csv[ 7 ].Float( ) ) ,
+					new Vector2( csv[ 9 ].Float( ) , csv[ 10 ].Float( ) ) );
 			}
 		}
 

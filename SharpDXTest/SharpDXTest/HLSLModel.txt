@@ -2,18 +2,23 @@
 cbuffer data :register(b0)
 {
 	float4x4 worldViewProj;
+	float4x4 ViewProj;
+	float4x4 World;
 	float alpha;
 };
 
 struct VS_IN
 {
 	float4 position : POSITION;
+	float3 normal   : NORMAL;
 	float2 texcoord : TEXCOORD;
 };
 
 struct PS_IN
 {
 	float4 position : SV_POSITION;
+	float3 normal   : NORMAL;
+	float2 spTex    : TEXCOORD;
 	float2 texcoord : TEXCOORD;
 };
 
@@ -26,19 +31,30 @@ SamplerState textureSampler
     AddressV = Wrap;
 };
 
+Texture2D sphereMap;
+SamplerState sphereSampler
+{
+    Filter = MIN_MAG_MIP_LINEAR;
+    AddressU = Wrap;
+    AddressV = Wrap;
+};
+
 PS_IN VS( VS_IN input)
 {
 	PS_IN output = (PS_IN)0;
 
 	output.position = mul(worldViewProj,input.position);
-	output.texcoord=input.texcoord;
+	output.normal   = mul(input.normal,World);
+	output.texcoord = input.texcoord;
+        //float2 NormalWV = mul(output.normal, ViewMatrix);
+	output.spTex = input.texcoord;
 
 	return output;
 }
 
 float4 PS( PS_IN input ) : SV_Target
 {
-	float4 sampled = textureMap.Sample( textureSampler, input.texcoord );
+	float4 sampled = textureMap.Sample( sphereSampler, input.texcoord );
 	sampled.w *= alpha;
 	return sampled;
 }

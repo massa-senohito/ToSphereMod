@@ -44,6 +44,7 @@ namespace SharpHelper
                 IndexCount = indices.Count()
             });
         }
+
         public void SetOnly<VType>( VType[] vertices, int[] indices) where VType : struct
         {
             VertexBuffer?.Dispose( );

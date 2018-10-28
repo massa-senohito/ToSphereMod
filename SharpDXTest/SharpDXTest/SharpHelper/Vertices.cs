@@ -16,20 +16,23 @@ namespace SharpHelper
         /// Position
         /// </summary>
         public Vector3 Position;
+		public Vector3 Normal;
 
         /// <summary>
         /// Texture coordinate
         /// </summary>
         public Vector2 TextureCoordinate;
 
+
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="position">Position</param>
         /// <param name="textureCoordinate">Texture Coordinate</param>
-        public TexturedVertex(Vector3 position,Vector2 textureCoordinate)
+        public TexturedVertex(Vector3 position,Vector3 normal , Vector2 textureCoordinate)
         {
             Position = position;
+			Normal = normal;
             TextureCoordinate = textureCoordinate;
         }
     }

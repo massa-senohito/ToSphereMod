@@ -19,6 +19,8 @@ namespace SharpHelper
         /// </summary>
         public ShaderResourceView DiffuseMap { get; set; }
 
+        public ShaderResourceView SphereMap { get; set; }
+
         /// <summary>
         /// Normal Map
         /// </summary>
