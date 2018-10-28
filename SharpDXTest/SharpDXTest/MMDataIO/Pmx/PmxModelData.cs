@@ -17,6 +17,7 @@ namespace MMDataIO.Pmx
         public PmxMorphData[] MorphArray { get; set; } = { };
         public PmxSlotData[] SlotArray { get; set; } = { };
         public PmxRigidData[] RigidArray { get; set; } = { };
+        public PmxJointData[] JointArray { get; set; } = { };
         public int[] VertexIndices { get; set; } = { };
         public string[] TextureFiles { get; set; } = { };
 
@@ -84,7 +85,7 @@ namespace MMDataIO.Pmx
             WritePmxData(MorphArray, writer, Header);
             WritePmxData(SlotArray, writer, Header);
             WritePmxData(RigidArray, writer, Header);
-            writer.Write(0);//Number of Joint
+            WritePmxData(JointArray, writer, Header);
             writer.Write(0);//Number of SoftBody
 
             byte CalcIndexSize(int count)
@@ -109,6 +110,7 @@ namespace MMDataIO.Pmx
             MorphArray = ReadPmxData<PmxMorphData>(reader, Header);
             SlotArray = ReadPmxData<PmxSlotData>(reader, Header);
             RigidArray = ReadPmxData<PmxRigidData>(reader, Header);
+            JointArray = ReadPmxData<PmxJointData>(reader, Header);
         }
 
         public void ReadPmd(BinaryReader reader)

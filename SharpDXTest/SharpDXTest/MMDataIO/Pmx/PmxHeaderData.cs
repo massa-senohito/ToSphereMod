@@ -77,7 +77,7 @@ namespace MMDataIO.Pmx
             reader.ReadBytes(MAGIC_BYTES.Length);
             Version = reader.ReadSingle();
 
-            reader.ReadByte(); //length of byte array
+            var len = reader.ReadByte(); //length of byte array
             Encoding = reader.ReadByte() == 1 ? Encoding.UTF8 : Encoding.GetEncoding("utf-16");
             NumberOfExtraUv = reader.ReadByte();
             VertexIndexSize = reader.ReadByte();

@@ -24,7 +24,12 @@ namespace MMDataIO.Pmx
             Indices = CloneUtil.CloneArray(Indices),
         };
 
-        public void Write(BinaryWriter writer, PmxHeaderData header)
+		public override string ToString()
+		{
+			return SlotName + "," + Indices[0];
+		}
+
+		public void Write(BinaryWriter writer, PmxHeaderData header)
         {
             writer.WriteText(header.Encoding, SlotName);
             writer.WriteText(header.Encoding, SlotNameE);
@@ -57,8 +62,8 @@ namespace MMDataIO.Pmx
 
             for (int i = 0; i < elementCount; i++)
             {
-                byte type = reader.ReadByte();
-                byte size = type == (byte)SlotType.BONE ? header.BoneIndexSize : header.MorphIndexSize;
+                Type = (SlotType)reader.ReadByte();
+                byte size = Type == (byte)SlotType.BONE ? header.BoneIndexSize : header.MorphIndexSize;
 
                 Indices[i] = reader.ReadPmxId(size);
             }

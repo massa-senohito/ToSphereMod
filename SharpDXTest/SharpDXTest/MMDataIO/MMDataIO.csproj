@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="BinUtil.cs" />
     <Compile Include="CloneUtil.cs" />
+    <Compile Include="Pmx\PmxJointData.cs" />
     <Compile Include="Pmx\PmxRigidData.cs" />
     <Compile Include="Vmd\IKeyFrame.cs" />
     <Compile Include="Vmd\VmdPropertyFrameData.cs" />
