@@ -106,6 +106,7 @@ namespace Platform
 			ModForm.SetRadiusBoxChanged( OnFactorTextChanged );
 			ModForm.SetAlphaBarChanged( OnAlphaBarChanged );
 			ModForm.SetOffsetBoxChanged( OnOffsetBoxChanged );
+			ModForm.SetMorphNameChanged( OnMorphNameChanged );
 			//frame rate counter
 			#region addEvent
 			Form.MouseClick += Form_MouseClick;
@@ -149,7 +150,11 @@ namespace Platform
 			var morphs = Model.DifferVert( );
 			//morphs.Select(x=>x.ToString()).WriteFile("MorphSentaiMiku.txt");
 			// 枠が不正になる
-			LoadedFromDialog.PmxModelData.AddVertMorph( "testc" , morphs );
+			LoadedFromDialog.PmxModelData.AddVertMorph( ModForm.MorphName , morphs );
+			if ( ModForm.MorphName == "" || ModForm.HasError )
+			{
+				return;
+			}
 			LoadedFromDialog.WriteUpdated( );
 		}
 
@@ -278,6 +283,18 @@ namespace Platform
 		{
 			var offset = ModForm.GetOffset( );
 			offset.Match( () => { } , off => Axis.Position = off);
+		}
+
+		private static void OnMorphNameChanged( object sender , EventArgs e )
+		{
+			if ( LoadedFromDialog.HasSameNameMorph( ModForm.MorphName ) )
+			{
+				ModForm.SetError( "モーフ名が重複" );
+			}
+			else
+			{
+				ModForm.SetError( );
+			}
 		}
 
 	}

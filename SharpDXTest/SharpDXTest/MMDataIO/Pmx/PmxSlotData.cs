@@ -26,7 +26,7 @@ namespace MMDataIO.Pmx
 
 		public override string ToString()
 		{
-			return SlotName + "," + Indices[0];
+			return SlotName ;
 		}
 
 		public void Write(BinaryWriter writer, PmxHeaderData header)

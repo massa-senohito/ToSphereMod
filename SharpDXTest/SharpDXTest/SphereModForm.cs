@@ -15,6 +15,12 @@ namespace BlenderModifier
 	public partial class SphereModForm : Form
 	{
 		public EventHandler OnUpdate;
+		public ModFormModel Model = new ModFormModel();
+		public bool HasError
+		{
+			get;
+			private set;
+		}
 
 		public SphereModForm()
 		{
@@ -26,6 +32,10 @@ namespace BlenderModifier
 			RadiusBar.ValueChanged += RadiusBar_ValueChanged;
 			RadiusBar.Value = 200;
 			UIAlphaBar.Value = 100;
+			const string PropertyName = nameof( MorphNameBox.Text );
+			Binding binding = new Binding( PropertyName , Model , "MorphName" );
+			MorphNameBox.DataBindings.Add(binding);
+			label4.Text = "";
 		}
 
 		private void RadiusBar_ValueChanged( object sender , EventArgs e )
@@ -57,6 +67,33 @@ namespace BlenderModifier
 		public void SetAlphaBarChanged( EventHandler f )
 		{
 			UIAlphaBar.ValueChanged += f;
+		}
+
+		// バインディング追加したけど思ったタイミングで発火しないのでイベント実装
+		public void SetMorphNameChanged( EventHandler f )
+		{
+			MorphNameBox.TextChanged += f;
+		}
+
+		public void SetError( string message = "" )
+		{
+			label4.Text = message;
+			if ( message == string.Empty )
+			{
+				HasError = false;
+			}
+			else
+			{
+				HasError = true;
+			}
+		}
+
+		public string MorphName
+		{
+			get
+			{
+				return MorphNameBox.Text;
+			}
 		}
 
 		public void SetOffset( V3 v3 )

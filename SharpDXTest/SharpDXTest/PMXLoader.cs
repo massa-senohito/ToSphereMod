@@ -133,6 +133,11 @@ namespace SharpDXTest
 			}
 		}
 
+		public bool HasSameNameMorph( string name )
+		{
+			return PmxModelData.HasSameNameMorph( name );
+		}
+
 		public void WriteUpdated()
 		{
 			PmxModelData.Write( Path + "ex.pmx" );

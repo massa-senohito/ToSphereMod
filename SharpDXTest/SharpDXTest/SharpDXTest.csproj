@@ -73,6 +73,7 @@
     <Compile Include="DraggableAxis.cs" />
     <Compile Include="Frame3f.cs" />
     <Compile Include="MMDModel.cs" />
+    <Compile Include="ModFormModel.cs" />
     <Compile Include="Option.cs" />
     <Compile Include="PMXLoader.cs" />
     <Compile Include="Program.cs" />
@@ -91,6 +92,7 @@
     <None Include="App.config" />
     <None Include="packages.config" />
     <None Include="Properties\DataSources\GPUData.datasource" />
+    <None Include="Properties\DataSources\ModFormModel.datasource" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="MMDataIO\MMDataIO.csproj">

@@ -36,6 +36,16 @@ namespace MMDataIO.Pmx
 				MorphArray = morphs.Cast<IPmxMorphTypeData>().ToArray()
 			} );
 			MorphArray = list.ToArray( );
+			var slot = Array.Find( SlotArray,s => s.SlotName == "表情" );
+			var indList = slot.Indices.ToList( );
+			indList.Add( MorphArray.Length - 1 );
+			slot.Indices = indList.ToArray( );
+
+		}
+
+		public bool HasSameNameMorph( string name )
+		{
+			return MorphArray.Any( m => m.MorphName == name );
 		}
 
 		public PmxModelData( BinaryReader path )

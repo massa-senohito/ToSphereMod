@@ -28,6 +28,7 @@
     /// </summary>
     private void InitializeComponent()
     {
+			this.components = new System.ComponentModel.Container();
 			this.menuStrip1 = new System.Windows.Forms.MenuStrip();
 			this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.loadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -42,10 +43,15 @@
 			this.RadiusBar = new System.Windows.Forms.TrackBar();
 			this.UIAlphaBar = new System.Windows.Forms.TrackBar();
 			this.UIAlpha = new System.Windows.Forms.Label();
+			this.MorphNameBox = new System.Windows.Forms.TextBox();
+			this.label3 = new System.Windows.Forms.Label();
+			this.label4 = new System.Windows.Forms.Label();
+			this.modFormModelBindingSource = new System.Windows.Forms.BindingSource(this.components);
 			this.menuStrip1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.FactorBar)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.RadiusBar)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.UIAlphaBar)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.modFormModelBindingSource)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// menuStrip1
@@ -98,7 +104,7 @@
 			// label2
 			// 
 			this.label2.AutoSize = true;
-			this.label2.Location = new System.Drawing.Point(12, 128);
+			this.label2.Location = new System.Drawing.Point(12, 110);
 			this.label2.Name = "label2";
 			this.label2.Size = new System.Drawing.Size(40, 12);
 			this.label2.TabIndex = 5;
@@ -106,7 +112,7 @@
 			// 
 			// RadiusBox
 			// 
-			this.RadiusBox.Location = new System.Drawing.Point(65, 125);
+			this.RadiusBox.Location = new System.Drawing.Point(65, 107);
 			this.RadiusBox.Name = "RadiusBox";
 			this.RadiusBox.Size = new System.Drawing.Size(100, 19);
 			this.RadiusBox.TabIndex = 4;
@@ -137,7 +143,7 @@
 			// 
 			// RadiusBar
 			// 
-			this.RadiusBar.Location = new System.Drawing.Point(65, 150);
+			this.RadiusBar.Location = new System.Drawing.Point(65, 139);
 			this.RadiusBar.Maximum = 1000;
 			this.RadiusBar.Name = "RadiusBar";
 			this.RadiusBar.Size = new System.Drawing.Size(104, 45);
@@ -145,7 +151,7 @@
 			// 
 			// UIAlphaBar
 			// 
-			this.UIAlphaBar.Location = new System.Drawing.Point(65, 212);
+			this.UIAlphaBar.Location = new System.Drawing.Point(65, 185);
 			this.UIAlphaBar.Maximum = 100;
 			this.UIAlphaBar.Name = "UIAlphaBar";
 			this.UIAlphaBar.Size = new System.Drawing.Size(104, 45);
@@ -154,17 +160,51 @@
 			// UIAlpha
 			// 
 			this.UIAlpha.AutoSize = true;
-			this.UIAlpha.Location = new System.Drawing.Point(13, 212);
+			this.UIAlpha.Location = new System.Drawing.Point(12, 185);
 			this.UIAlpha.Name = "UIAlpha";
 			this.UIAlpha.Size = new System.Drawing.Size(45, 12);
 			this.UIAlpha.TabIndex = 11;
 			this.UIAlpha.Text = "UIAlpha";
+			// 
+			// MorphNameBox
+			// 
+			this.MorphNameBox.Location = new System.Drawing.Point(132, 251);
+			this.MorphNameBox.Name = "MorphNameBox";
+			this.MorphNameBox.Size = new System.Drawing.Size(285, 19);
+			this.MorphNameBox.TabIndex = 12;
+			this.MorphNameBox.Text = "MorphName";
+			// 
+			// label3
+			// 
+			this.label3.AutoSize = true;
+			this.label3.Location = new System.Drawing.Point(26, 251);
+			this.label3.Name = "label3";
+			this.label3.Size = new System.Drawing.Size(65, 12);
+			this.label3.TabIndex = 13;
+			this.label3.Text = "morphName";
+			// 
+			// label4
+			// 
+			this.label4.AutoSize = true;
+			this.label4.ForeColor = System.Drawing.Color.Red;
+			this.label4.Location = new System.Drawing.Point(192, 217);
+			this.label4.Name = "label4";
+			this.label4.Size = new System.Drawing.Size(35, 12);
+			this.label4.TabIndex = 14;
+			this.label4.Text = "label4";
+			// 
+			// modFormModelBindingSource
+			// 
+			this.modFormModelBindingSource.DataSource = typeof(SharpDXTest.ModFormModel);
 			// 
 			// SphereModForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(429, 332);
+			this.Controls.Add(this.label4);
+			this.Controls.Add(this.label3);
+			this.Controls.Add(this.MorphNameBox);
 			this.Controls.Add(this.UIAlpha);
 			this.Controls.Add(this.UIAlphaBar);
 			this.Controls.Add(this.RadiusBar);
@@ -184,6 +224,7 @@
 			((System.ComponentModel.ISupportInitialize)(this.FactorBar)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.RadiusBar)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.UIAlphaBar)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.modFormModelBindingSource)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -204,5 +245,9 @@
     private System.Windows.Forms.TrackBar RadiusBar;
     private System.Windows.Forms.TrackBar UIAlphaBar;
     private System.Windows.Forms.Label UIAlpha;
-  }
+		private System.Windows.Forms.TextBox MorphNameBox;
+		private System.Windows.Forms.Label label3;
+		private System.Windows.Forms.Label label4;
+		private System.Windows.Forms.BindingSource modFormModelBindingSource;
+	}
 }
