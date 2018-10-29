@@ -85,13 +85,13 @@ namespace SharpDXTest
 	public struct GPUData
 	{
 		[FieldOffset( 0 )]
-		public Matrix WorldViewProjection;
+		public Matrix World;
 
 		[FieldOffset( 64 )]
-		public Matrix ViewProjection;
+		public Matrix View;
 
 		[FieldOffset( 128 )]
-		public Matrix World;
+		public Matrix WorldViewProjection;
 
 		[FieldOffset( 128 + 64 )]
 		public float Alpha;
@@ -313,7 +313,7 @@ namespace SharpDXTest
 			}
 		}
 
-		public void Update( SharpDevice device , Matrix ViewProjection )
+		public void Update( SharpDevice device , Matrix View , Matrix Projection )
 		{
 			//apply shader
 			Shader.Apply( );
@@ -321,20 +321,17 @@ namespace SharpDXTest
 			//apply constant buffer to shader
 			VertexShader.SetConstantBuffer( 0 , GPUDataBuffer );
 			PixelShader.SetConstantBuffer( 0 , GPUDataBuffer );
-			Matrix worldViewProjection = World * ViewProjection;
-			GpuData.WorldViewProjection = worldViewProjection;
+
+			GpuData.View = View;
+			GpuData.WorldViewProjection = World * View * Projection;
 			GpuData.World = World;
-			GpuData.ViewProjection = ViewProjection;
 			device.UpdateData( GPUDataBuffer , GpuData );
 			Mesh.Begin( );
 			for ( int i = 0 ; i < Mesh.SubSets.Count ; i++ )
 			{
 				SharpSubSet sharpSubSet = Mesh.SubSets[ i ];
 				device.DeviceContext.PixelShader.SetShaderResource( 0 , sharpSubSet.DiffuseMap );
-				if ( sharpSubSet.SphereMap != null )
-				{
-					device.DeviceContext.PixelShader.SetShaderResource( 1 , sharpSubSet.SphereMap );
-				}
+				device.DeviceContext.PixelShader.SetShaderResource( 1 , sharpSubSet.SphereMap );
 				//set texture
 				Mesh.Draw( i );
 			}

@@ -236,8 +236,8 @@ namespace Platform
 			device.Clear( Color.Brown );
 
 			//apply shader
-			Model.Update( device , View * Projection );
-			Axis.Update( device , View * Projection );
+			Model.Update( device , View , Projection );
+			Axis.Update( device , View , Projection );
 #if DEBUGLINE
 			line.Update(device, View * Projection);
 #endif

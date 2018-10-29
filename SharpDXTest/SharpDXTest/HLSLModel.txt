@@ -1,9 +1,9 @@
 
 cbuffer data :register(b0)
 {
-	float4x4 worldViewProj;
-	float4x4 ViewProj;
 	float4x4 World;
+	float4x4 View;
+	float4x4 WorldViewProj;
 	float alpha;
 };
 
@@ -18,8 +18,8 @@ struct PS_IN
 {
 	float4 position : SV_POSITION;
 	float3 normal   : NORMAL;
-	float2 spTex    : TEXCOORD;
-	float2 texcoord : TEXCOORD;
+	float2 spTex    : TEXCOORD0;
+	float2 texcoord : TEXCOORD1;
 };
 
 //texture
@@ -39,22 +39,37 @@ SamplerState sphereSampler
     AddressV = Wrap;
 };
 
+bool useSphere;
+bool isAdd;
+
 PS_IN VS( VS_IN input)
 {
 	PS_IN output = (PS_IN)0;
 
-	output.position = mul(worldViewProj,input.position);
+	output.position = mul(WorldViewProj,input.position);
 	output.normal   = mul(input.normal,World);
 	output.texcoord = input.texcoord;
-        //float2 NormalWV = mul(output.normal, ViewMatrix);
-	output.spTex = input.texcoord;
+	float2 NormalWV = mul(output.normal, View);
+	output.spTex.x  = NormalWV.x * 0.5f + 0.5f;
+	output.spTex.y  = NormalWV.y * 0.5f + 0.5f;
 
 	return output;
 }
 
 float4 PS( PS_IN input ) : SV_Target
 {
-	float4 sampled = textureMap.Sample( sphereSampler, input.texcoord );
+	float4 sampled = textureMap.Sample( textureSampler, input.texcoord );
+	if(useSphere)
+	{
+		if(isAdd)
+		{
+			sampled += sphereMap.Sample( sphereSampler , input.spTex );
+		}
+		else
+		{
+			sampled *= sphereMap.Sample( sphereSampler , input.spTex );
+		}
+	}
 	sampled.w *= alpha;
 	return sampled;
 }
