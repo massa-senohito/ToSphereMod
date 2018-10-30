@@ -14,72 +14,7 @@ using Vert = SharpHelper.TexturedVertex;
 
 namespace SharpDXTest
 {
-	public class Material
-	{
-		//;Material,材質名,材質名(英),拡散色_R,拡散色_G,拡散色_B,拡散色_A(非透過度),反射色_R,反射色_G,反射色_B,反射強度,環境色_R,環境色_G,環境色_B,両面描画(0/1),地面影(0/1),セルフ影マップ(0/1),セルフ影(0/1),頂点色(0/1),描画(0:Tri/1:Point/2:Line),エッジ(0/1),エッジサイズ,エッジ色_R,エッジ色_G,エッジ色_B,エッジ色_A,テクスチャパス,スフィアテクスチャパス,スフィアモード(0:無効/1:乗算/2:加算/3:サブテクスチャ),Toonテクスチャパス,メモ
-		//Material,"スカート腕ヘドフォン","en",1,1,1,1,0,0,0,50,0.4,0.4,0.4,1,1,1,1,0,0,1,0.6,0.3,0.2,0.4,0.6,"k_huku1.png","body00_s.bmp",2,"toon_defo.bmp",""
-		//;Face,親材質名,面Index,頂点Index1,頂点Index2,頂点Index3
-		//Face,"スカート腕ヘドフォン",0,858,840,855
-		public string Name;
 
-		public string TexName;
-		public string SphereName;
-
-		public IEnumerable<Vert> Vertice;
-
-		public IEnumerable<int[]> Faces;
-
-		public int[] FlattenFace;
-
-		public Material( string line )
-		{
-			string[] csv = line.Split( ',' );
-			Name = csv[ 1 ];
-			TexName = csv[ 26 ];
-			TexName = TexName.Replace( "\"" , "" );
-		}
-		//      Pmx.Material[0].Faces[0].Vertex1.Position
-
-		// PMXEditorから持って来る用
-		public Material( string name , string texName , string sphereName , IEnumerable<Vert> vertice , IEnumerable<int[]> faces )
-		{
-			Name = name;
-			TexName = texName;
-			SphereName = sphereName;
-			Vertice = vertice;
-			Faces = faces;
-			FlattenFace = Faces.SelectMany( x => x ).ToArray( );
-		}
-
-		private IEnumerable<Vert> GetVertex( Vert[] vert )
-		{
-			foreach ( int[] i in Faces )
-			{
-				yield return vert[ i[ 0 ] ];
-				yield return vert[ i[ 1 ] ];
-				yield return vert[ i[ 2 ] ];
-			}
-		}
-
-		public static IEnumerable<Material> MakeFromCSV( IEnumerable<string> lines , Dictionary<string , List<string>> dictionary , Vert[] verts )
-		{
-			foreach ( string item in lines )
-			{
-				Material mat = new Material( item );
-				List<string> facecsv = dictionary[ mat.Name ];
-				mat.Faces = Util.ParseFaceCSVAll( facecsv );
-				mat.Vertice = mat.GetVertex( verts );
-				mat.FlattenFace = mat.Faces.SelectMany( x => x ).ToArray( );
-				yield return mat;
-			}
-		}
-
-		public override string ToString()
-		{
-			return Name + " : " + TexName;
-		}
-
-	}
 
 	[StructLayout( LayoutKind.Explicit )]
 	public struct GPUData
@@ -115,7 +50,7 @@ namespace SharpDXTest
 
 		public Face[] Faces;
 
-		public IEnumerable<Material> Materials;
+		public List<Material> Materials;
 
 		SphereCast Cast;
 
@@ -164,6 +99,7 @@ namespace SharpDXTest
 					filename.Match( () => notFoundTexList.Add( item.TexName ) , r => subSet.DiffuseMap = r );
 				}
 
+
 				if ( item.SphereName != string.Empty )
 				{
 					var filename = TryGetResource(device,item.SphereName);
@@ -211,7 +147,7 @@ namespace SharpDXTest
 			Vertice.ArrayFullCopy( OrigVertice );
 			// 次の文字列は材質名になるので、材質名のグループを作る
 			var faceGr = gs[ "Face" ].GroupBy( s => s.Split( ',' )[ 1 ] ).ToDictionary( s => s.Key , g => g.ToList( ) );
-			Materials = Material.MakeFromCSV( gs[ "Material" ] , faceGr , Vertice );
+			Materials = Material.MakeFromCSV( gs[ "Material" ] , faceGr , Vertice ).ToList();
 
 			GpuData = new GPUData( );
 			GpuData.Alpha = 1;
@@ -224,7 +160,7 @@ namespace SharpDXTest
 			Vertice = vertex;
 			OrigVertice = new Vert[ Vertice.Length ];
 			Vertice.ArrayFullCopy( OrigVertice );
-			Materials = material;
+			Materials = material.ToList();
 			GpuData = new GPUData( );
 			GpuData.Alpha = 1;
 			Cast = new SphereCast( Matrix.Zero );
@@ -232,6 +168,7 @@ namespace SharpDXTest
 
 		protected SharpMesh Mesh;
 		Buffer GPUDataBuffer;
+		Buffer MaterialDataBuffer;
 		GPUData GpuData;
 		SharpShader Shader;
 		VertexShaderStage VertexShader;
@@ -251,6 +188,7 @@ namespace SharpDXTest
 						new InputElement("TEXCOORD", 0, Format.R32G32_Float, 24, 0)
 				} );
 			GPUDataBuffer = Shader.CreateBuffer<GPUData>( );
+			MaterialDataBuffer = Shader.CreateBuffer<MaterialGPUData>( );
 			VertexShader = device.DeviceContext.VertexShader;
 			PixelShader = device.DeviceContext.PixelShader;
 
@@ -330,8 +268,13 @@ namespace SharpDXTest
 			for ( int i = 0 ; i < Mesh.SubSets.Count ; i++ )
 			{
 				SharpSubSet sharpSubSet = Mesh.SubSets[ i ];
+				PixelShaderStage pixelShader = device.DeviceContext.PixelShader;
+				MaterialGPUData materialData = Materials[ i ].MaterialData;
 				device.DeviceContext.PixelShader.SetShaderResource( 0 , sharpSubSet.DiffuseMap );
 				device.DeviceContext.PixelShader.SetShaderResource( 1 , sharpSubSet.SphereMap );
+				pixelShader.SetConstantBuffer( 1 , MaterialDataBuffer );
+				device.UpdateData( MaterialDataBuffer , materialData );
+				pixelShader.SetShaderResource( 1 , sharpSubSet.SphereMap );
 				//set texture
 				Mesh.Draw( i );
 			}

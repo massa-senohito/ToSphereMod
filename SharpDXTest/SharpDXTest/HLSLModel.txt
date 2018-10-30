@@ -6,6 +6,12 @@ cbuffer data :register(b0)
 	float4x4 WorldViewProj;
 	float alpha;
 };
+cbuffer MaterialData :register(b1)
+{
+	bool UseSphere;
+	bool IsAdd;
+	float MatAlpha;
+};
 
 struct VS_IN
 {
@@ -39,8 +45,7 @@ SamplerState sphereSampler
     AddressV = Wrap;
 };
 
-bool useSphere;
-bool isAdd;
+
 
 PS_IN VS( VS_IN input)
 {
@@ -59,9 +64,9 @@ PS_IN VS( VS_IN input)
 float4 PS( PS_IN input ) : SV_Target
 {
 	float4 sampled = textureMap.Sample( textureSampler, input.texcoord );
-	if(useSphere)
+	if(UseSphere)
 	{
-		if(isAdd)
+		if(IsAdd)
 		{
 			sampled += sphereMap.Sample( sphereSampler , input.spTex );
 		}

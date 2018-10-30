@@ -106,7 +106,7 @@ namespace SharpDXTest
 				sphereName = model.TextureFiles[ data.SphereId ];
 			}
 			Material temp = 
-				new Material( data.MaterialName , texName , sphereName , flattenFace , faceIndex );
+				new Material( data.MaterialName , texName , sphereName , flattenFace , faceIndex ,data.Mode);
 			return temp;
 		}
 
