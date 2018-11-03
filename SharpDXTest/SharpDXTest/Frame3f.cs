@@ -85,12 +85,17 @@ namespace g3
 
         public Vector3 GetAxis(int nAxis)
         {
-            if (nAxis == 0)
-                return (rotation.RotMat() * Vector3.UnitX.TransMat() ).TranslationVector;
-            else if (nAxis == 1)
-                return (rotation.RotMat() * Vector3.UnitY.TransMat() ).TranslationVector;
-            else if (nAxis == 2)
-                return (rotation.RotMat() * Vector3.UnitZ.TransMat() ).TranslationVector;
+			Matrix rotMat = rotation.RotMat( );
+			if ( nAxis == 0 )
+				return ( rotMat * Vector3.UnitX.TransMat( ) ).Right;
+			else if ( nAxis == 1 )
+				return ( rotMat * Vector3.UnitY.TransMat( ) ).Up;
+			else if ( nAxis == 2 )
+			{
+				Matrix zMove = Vector3.UnitZ.TransMat( );
+				// たまに逆になる、理由はよくわからない
+				return -( rotMat * zMove ).Forward;
+			}
             else
                 throw new ArgumentOutOfRangeException("nAxis");
         }

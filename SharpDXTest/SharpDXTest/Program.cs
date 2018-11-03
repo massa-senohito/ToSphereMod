@@ -80,8 +80,8 @@ namespace Platform
 			Axis.OnClicked( Mouse , currentRay );
 			ModForm.SetOffset( Axis.Position );
 #if DEBUGLINE
-			//line.OnClicked(mouse, currentRay);
-			//line.SetLine(Camera.Position + Camera.Forward * 10, Camera.Position + Camera.View.Right * 10);
+			//Line.OnClicked(Mouse, currentRay);
+			//Line.SetLine( Vector3.Zero , Axis.RotXFrame);
 			//line.SetLine(new Vector3(2,-12,-12), new Vector3(-8,8,10));
 #endif
 #if FONT
@@ -123,8 +123,8 @@ namespace Platform
 				Model.LoadTexture( device );
 				Axis.LoadTexture( device );
 #if DEBUGLINE
-				line.LoadTexture(device);
-				line.AfterLoaded();
+				Line.LoadTexture(device);
+				Line.AfterLoaded();
 #endif
 
 				//init frame counter
@@ -140,7 +140,7 @@ namespace Platform
 				Model.Dispose( );
 				Axis.Dispose( );
 #if DEBUGLINE
-				line.Dispose();
+				Line.Dispose();
 #endif
 			}
 		}
@@ -238,8 +238,9 @@ namespace Platform
 			//apply shader
 			Model.Update( device , View , Projection );
 			Axis.Update( device , View , Projection );
+
 #if DEBUGLINE
-			line.Update(device, View * Projection);
+			Line.Update(device, View , Projection);
 #endif
 			Model.ToSphere( Axis.Position );
 			Model.ToSphere( Axis.Position.InvX( ) , true );

@@ -99,6 +99,7 @@ namespace BlenderModifier
 				float facm = 1.0f - Fac;
 
 				V3 nv = vec.GetNormalized( );
+				nv.Y *= 2;
 				tmpCo = nv * Len * Fac + tmpCo * facm;
 				{
 					// 軸中心の座標系頂点を元の位置に戻す

@@ -196,6 +196,8 @@ namespace SharpDXTest
 
 		public Matrix World = Matrix.Identity;
 
+		bool IsDirty = false;
+
 		public Vector3 Position
 		{
 			get
@@ -205,22 +207,9 @@ namespace SharpDXTest
 			set
 			{
 				World.TranslationVector = value;
-
+				IsDirty = true;
 				//Util.DebugWrite(World.TransByMat(Vector3.UnitX).ToString());
-				foreach ( Face i in Faces )
-				{
 
-					i.Update( World );
-					//Util.DebugWrite(i.TriString);
-					//return;
-				}
-				// todo 今の所頂点座標を変更する必要がないのでいじってはいない
-				//for (int i = 0; i < Vertice.Length; i++)
-				//{
-				//  var item = Vertice[i];
-
-				//  item.Position = World.TransByMat(item.Position).ToV3();
-				//}
 
 			}
 		}
@@ -235,7 +224,10 @@ namespace SharpDXTest
 			set
 			{
 				// rotationをなくさないと相対回転になる
-				World = World * Matrix.RotationQuaternion( value );
+				var pos = Position;
+				World = Matrix.RotationQuaternion( value );
+				Position = pos;
+				IsDirty = true;
 			}
 		}
 
@@ -251,8 +243,31 @@ namespace SharpDXTest
 			}
 		}
 
+		void OnDirty()
+		{
+			foreach ( Face i in Faces )
+			{
+
+				i.Update( World );
+				//Util.DebugWrite(i.TriString);
+			}
+			// todo 今の所頂点座標を変更する必要がないのでいじってはいない
+			//for (int i = 0; i < Vertice.Length; i++)
+			//{
+			//  var item = Vertice[i];
+
+			//  item.Position = World.TransByMat(item.Position).ToV3();
+			//}
+		}
+
 		public void Update( SharpDevice device , Matrix View , Matrix Projection )
 		{
+			if ( IsDirty )
+			{
+				OnDirty( );
+			}
+			IsDirty = false;
+
 			//apply shader
 			Shader.Apply( );
 
@@ -274,7 +289,6 @@ namespace SharpDXTest
 				device.DeviceContext.PixelShader.SetShaderResource( 1 , sharpSubSet.SphereMap );
 				pixelShader.SetConstantBuffer( 1 , MaterialDataBuffer );
 				device.UpdateData( MaterialDataBuffer , materialData );
-				pixelShader.SetShaderResource( 1 , sharpSubSet.SphereMap );
 				//set texture
 				Mesh.Draw( i );
 			}

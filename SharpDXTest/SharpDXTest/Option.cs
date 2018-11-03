@@ -12,6 +12,11 @@ public abstract class Option<T>
 		get;
 	}
 
+	public abstract bool HasValue
+	{
+		get;
+	}
+
 	//値が存在する場合には値を返し、存在しない場合には既定値を返す
 	public abstract T GetOrDefault( T def );
 	//値が存在するかどうかによって別々の処理を実行する
@@ -38,6 +43,14 @@ public sealed class None<T> : Option<T>
 		get
 		{
 			throw new Exception( "not existed value" );
+		}
+	}
+
+	public override bool HasValue
+	{
+		get
+		{
+			return false;
 		}
 	}
 
@@ -93,6 +106,14 @@ public sealed class Some<T> : Option<T>
 		get
 		{
 			return _value;
+		}
+	}
+
+	public override bool HasValue
+	{
+		get
+		{
+			return true;
 		}
 	}
 
