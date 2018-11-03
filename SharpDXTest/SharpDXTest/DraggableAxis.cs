@@ -136,28 +136,34 @@ namespace SharpDXTest
 					if ( res.Info == "red" || res.Info == "redHead" )
 					{
 						state.Update( res , ClickedAxis.X );
+						break;
 					}
 					if ( res.Info == "redRot" )
 					{
 						state.Update( res , ClickedAxis.XRot );
+						break;
 					}
 
 					if ( res.Info == "green" || res.Info == "greenHead" )
 					{
 						state.Update( res , ClickedAxis.Y );
+						break;
 					}
 					if ( res.Info == "greenRot" )
 					{
 						state.Update( res , ClickedAxis.YRot );
+						break;
 					}
 
 					if ( res.Info == "blue" || res.Info == "blueHead" )
 					{
 						state.Update( res , ClickedAxis.Z );
+						break;
 					}
 					if ( res.Info == "blueRot" )
 					{
 						state.Update( res , ClickedAxis.ZRot );
+						break;
 					}
 
 					//Util.DebugWrite( $"start {res.Info}" );
@@ -303,6 +309,7 @@ namespace f3
             float fDeltaAngle = (fNewAngle - fRotateStartAngle);
             //if (DeltaAngleConstraintF != null)
             //    fDeltaAngle = DeltaAngleConstraintF(rotateFrameL, nRotationAxis, fDeltaAngle);
+
 			Util.DebugWrite( "fDeltaAngle " + fDeltaAngle );
 
 			fDeltaAngle *= 0.03f;

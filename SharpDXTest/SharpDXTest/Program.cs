@@ -79,6 +79,7 @@ namespace Platform
 			}
 			Axis.OnClicked( Mouse , currentRay );
 			ModForm.SetOffset( Axis.Position );
+			ModForm.EulerRotate = Axis.Rotation.EulerAngle( );
 #if DEBUGLINE
 			//Line.OnClicked(Mouse, currentRay);
 			//Line.SetLine( Vector3.Zero , Axis.RotXFrame);
@@ -107,7 +108,9 @@ namespace Platform
 			ModForm.SetAlphaBarChanged( OnAlphaBarChanged );
 			ModForm.SetOffsetBoxChanged( OnOffsetBoxChanged );
 			ModForm.SetMorphNameChanged( OnMorphNameChanged );
-			//frame rate counter
+			ModForm.SetScaleChanged( OnScaleChanged );
+			ModForm.SetRotChanged( OnRotTextChanged );
+
 			#region addEvent
 			Form.MouseClick += Form_MouseClick;
 			Form.MouseMove += Form_MouseMove;
@@ -117,6 +120,7 @@ namespace Platform
 			;
 			Debug = new VDBDebugger( );
 			#endregion
+
 			using ( SharpDevice device = new SharpDevice( Form ) )
 			{
 
@@ -143,6 +147,16 @@ namespace Platform
 				Line.Dispose();
 #endif
 			}
+		}
+
+		private static void OnRotTextChanged( object sender , EventArgs e )
+		{
+			Axis.Rotation = ModForm.EulerRotate.QuatFromEuler( );
+		}
+
+		private static void OnScaleChanged( object sender , EventArgs e )
+		{
+			Model.CastScale( ModForm.Scale );
 		}
 
 		private static void Form_FormClosed( object sender , FormClosedEventArgs e )

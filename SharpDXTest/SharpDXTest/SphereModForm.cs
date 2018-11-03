@@ -76,6 +76,13 @@ namespace BlenderModifier
 			ZScale.TextChanged += f;
 		}
 
+		public void SetRotChanged( EventHandler f )
+		{
+			XRot.TextChanged += f;
+			YRot.TextChanged += f;
+			ZRot.TextChanged += f;
+		}
+
 		// バインディング追加したけど思ったタイミングで発火しないのでイベント実装
 		public void SetMorphNameChanged( EventHandler f )
 		{
@@ -143,6 +150,28 @@ namespace BlenderModifier
 				XScale.Text = x.ToString();
 				YScale.Text = y.ToString();
 				ZScale.Text = z.ToString();
+			}
+		}
+
+		public V3 EulerRotate
+		{
+			get
+			{
+				return new V3( XRot.Text.Float( ) , YRot.Text.Float( ) , ZRot.Text.Float( ) );
+			}
+			set
+			{
+
+				if ( OffsetBox.Focused )
+				{
+					return;
+				}
+				var x = value.X;
+				var y = value.Y;
+				var z = value.Z;
+				XRot.Text = x.ToString( );
+				YRot.Text = y.ToString( );
+				ZRot.Text = z.ToString( );
 			}
 		}
 

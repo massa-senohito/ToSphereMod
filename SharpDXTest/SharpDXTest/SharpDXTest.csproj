@@ -86,7 +86,6 @@
     <Compile Include="SphereModForm.Designer.cs">
       <DependentUpon>SphereModForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="TextBoxChangedEventArgs.cs" />
     <Compile Include="TrackBallCamera.cs" />
     <Compile Include="Util.cs" />
   </ItemGroup>

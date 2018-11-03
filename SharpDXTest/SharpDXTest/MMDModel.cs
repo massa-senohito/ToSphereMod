@@ -325,6 +325,11 @@ namespace SharpDXTest
 			}
 		}
 
+		public void CastScale( Vector3 scale )
+		{
+			Cast.Scale = scale;
+		}
+
 		public void ToSphere( Matrix pivot , bool add = false )
 		{
 			pivot.Decompose( out Vector3 scale , out Quaternion rot , out Vector3 trans );

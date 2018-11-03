@@ -46,11 +46,15 @@
 			this.MorphNameBox = new System.Windows.Forms.TextBox();
 			this.label3 = new System.Windows.Forms.Label();
 			this.label4 = new System.Windows.Forms.Label();
-			this.modFormModelBindingSource = new System.Windows.Forms.BindingSource(this.components);
 			this.label5 = new System.Windows.Forms.Label();
 			this.XScale = new System.Windows.Forms.TextBox();
 			this.ZScale = new System.Windows.Forms.TextBox();
 			this.YScale = new System.Windows.Forms.TextBox();
+			this.modFormModelBindingSource = new System.Windows.Forms.BindingSource(this.components);
+			this.YRot = new System.Windows.Forms.TextBox();
+			this.ZRot = new System.Windows.Forms.TextBox();
+			this.XRot = new System.Windows.Forms.TextBox();
+			this.label6 = new System.Windows.Forms.Label();
 			this.menuStrip1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.FactorBar)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.RadiusBar)).BeginInit();
@@ -197,14 +201,10 @@
 			this.label4.TabIndex = 14;
 			this.label4.Text = "label4";
 			// 
-			// modFormModelBindingSource
-			// 
-			this.modFormModelBindingSource.DataSource = typeof(SharpDXTest.ModFormModel);
-			// 
 			// label5
 			// 
 			this.label5.AutoSize = true;
-			this.label5.Location = new System.Drawing.Point(26, 329);
+			this.label5.Location = new System.Drawing.Point(17, 400);
 			this.label5.Name = "label5";
 			this.label5.Size = new System.Drawing.Size(32, 12);
 			this.label5.TabIndex = 15;
@@ -212,33 +212,74 @@
 			// 
 			// XScale
 			// 
-			this.XScale.Location = new System.Drawing.Point(91, 322);
+			this.XScale.Location = new System.Drawing.Point(82, 393);
 			this.XScale.Name = "XScale";
 			this.XScale.Size = new System.Drawing.Size(103, 19);
 			this.XScale.TabIndex = 16;
-			this.XScale.Text = "0";
+			this.XScale.Text = "1";
 			// 
 			// ZScale
 			// 
-			this.ZScale.Location = new System.Drawing.Point(309, 322);
+			this.ZScale.Location = new System.Drawing.Point(300, 393);
 			this.ZScale.Name = "ZScale";
 			this.ZScale.Size = new System.Drawing.Size(103, 19);
 			this.ZScale.TabIndex = 17;
-			this.ZScale.Text = "0";
+			this.ZScale.Text = "1";
 			// 
 			// YScale
 			// 
-			this.YScale.Location = new System.Drawing.Point(200, 322);
+			this.YScale.Location = new System.Drawing.Point(191, 393);
 			this.YScale.Name = "YScale";
 			this.YScale.Size = new System.Drawing.Size(103, 19);
 			this.YScale.TabIndex = 18;
-			this.YScale.Text = "0";
+			this.YScale.Text = "1";
+			// 
+			// modFormModelBindingSource
+			// 
+			this.modFormModelBindingSource.DataSource = typeof(SharpDXTest.ModFormModel);
+			// 
+			// YRot
+			// 
+			this.YRot.Location = new System.Drawing.Point(191, 353);
+			this.YRot.Name = "YRot";
+			this.YRot.Size = new System.Drawing.Size(103, 19);
+			this.YRot.TabIndex = 22;
+			this.YRot.Text = "0";
+			// 
+			// ZRot
+			// 
+			this.ZRot.Location = new System.Drawing.Point(300, 353);
+			this.ZRot.Name = "ZRot";
+			this.ZRot.Size = new System.Drawing.Size(103, 19);
+			this.ZRot.TabIndex = 21;
+			this.ZRot.Text = "0";
+			// 
+			// XRot
+			// 
+			this.XRot.Location = new System.Drawing.Point(82, 353);
+			this.XRot.Name = "XRot";
+			this.XRot.Size = new System.Drawing.Size(103, 19);
+			this.XRot.TabIndex = 20;
+			this.XRot.Text = "0";
+			// 
+			// label6
+			// 
+			this.label6.AutoSize = true;
+			this.label6.Location = new System.Drawing.Point(17, 360);
+			this.label6.Name = "label6";
+			this.label6.Size = new System.Drawing.Size(19, 12);
+			this.label6.TabIndex = 19;
+			this.label6.Text = "rot";
 			// 
 			// SphereModForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(429, 369);
+			this.ClientSize = new System.Drawing.Size(429, 424);
+			this.Controls.Add(this.YRot);
+			this.Controls.Add(this.ZRot);
+			this.Controls.Add(this.XRot);
+			this.Controls.Add(this.label6);
 			this.Controls.Add(this.YScale);
 			this.Controls.Add(this.ZScale);
 			this.Controls.Add(this.XScale);
@@ -294,5 +335,9 @@
 		private System.Windows.Forms.TextBox XScale;
 		private System.Windows.Forms.TextBox ZScale;
 		private System.Windows.Forms.TextBox YScale;
+		private System.Windows.Forms.TextBox YRot;
+		private System.Windows.Forms.TextBox ZRot;
+		private System.Windows.Forms.TextBox XRot;
+		private System.Windows.Forms.Label label6;
 	}
 }

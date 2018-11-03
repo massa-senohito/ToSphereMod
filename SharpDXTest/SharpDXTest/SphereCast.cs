@@ -23,6 +23,8 @@ namespace BlenderModifier
 
 		public V3 Offset;
 		public Matrix Rot;
+		public V3 Scale = V3.One;
+
 		Matrix TempMatrix;
 		Matrix InvercePivot;
 		V3[] SphereVertice;
@@ -100,7 +102,11 @@ namespace BlenderModifier
 				float facm = 1.0f - Fac;
 
 				V3 nv = vec.GetNormalized( );
-				nv.Y *= 2;
+
+				nv.X *= Scale.X;
+				nv.Y *= Scale.Y;
+				nv.Z *= Scale.Z;
+
 				nv = Rot.TransByMat( nv ).ToV3( );
 
 				tmpCo = nv * Len * Fac + tmpCo * facm;
