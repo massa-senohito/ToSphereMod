@@ -19,8 +19,10 @@ namespace BlenderModifier
 		public float Radius = 2f;
 		float Len;
 		public float Size;
-		public Matrix Pivot;
+		//public Matrix Pivot;
+
 		public V3 Offset;
+		public Matrix Rot;
 		Matrix TempMatrix;
 		Matrix InvercePivot;
 		V3[] SphereVertice;
@@ -29,7 +31,7 @@ namespace BlenderModifier
 		{
 			Matrix objectMatrix = Matrix.Identity;
 			Matrix InverceObject = Matrix.Identity;
-			Matrix offsetPivot = Matrix.Translation( Offset ) + Pivot;
+			Matrix offsetPivot = Matrix.Translation( Offset );
 
 			// 軸のオブジェクトを中心として使用するため必ず通す
 			//if (flag & MOD_CAST_USE_OB_TRANSFORM)
@@ -43,7 +45,7 @@ namespace BlenderModifier
 			InverceObject = objectMatrix.Inverted( );
 			V3 center = InverceObject.TransByMat( offsetPivot.TranslationVector ).ToV3( );
 
-			V3 pivot = offsetPivot.TranslationVector;
+			//V3 pivot = offsetPivot.TranslationVector;
 			V3[] ovs = OriginalVertice;
 			Len = Size < float.Epsilon ? Radius : Size;
 			// blenderではあまり良い結果にならなかったためsizeは対応しない
@@ -59,7 +61,7 @@ namespace BlenderModifier
 
 		public SphereCast( Matrix pivot )
 		{
-			Pivot = pivot;
+			//Pivot = pivot;
 		}
 
 		public V3[] GetSpereUntilEnd( V3[] ovs )
@@ -84,7 +86,6 @@ namespace BlenderModifier
 					//\blenderSource\blender\source\blender\blenlib\BLI_math_matrix.h
 					// 軸オブジェクト中心の座標系に頂点を持っていく
 					tmpCo = TempMatrix.TransByMat( tmpCo ).ToV3( );
-					V3 t = TempMatrix.TranslationVector;
 				}
 				if ( i >= vs.Length )
 				{
@@ -100,6 +101,8 @@ namespace BlenderModifier
 
 				V3 nv = vec.GetNormalized( );
 				nv.Y *= 2;
+				nv = Rot.TransByMat( nv ).ToV3( );
+
 				tmpCo = nv * Len * Fac + tmpCo * facm;
 				{
 					// 軸中心の座標系頂点を元の位置に戻す

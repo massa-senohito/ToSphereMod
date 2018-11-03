@@ -69,6 +69,13 @@ namespace BlenderModifier
 			UIAlphaBar.ValueChanged += f;
 		}
 
+		public void SetScaleChanged( EventHandler f )
+		{
+			XScale.TextChanged += f;
+			YScale.TextChanged += f;
+			ZScale.TextChanged += f;
+		}
+
 		// バインディング追加したけど思ったタイミングで発火しないのでイベント実装
 		public void SetMorphNameChanged( EventHandler f )
 		{
@@ -120,6 +127,23 @@ namespace BlenderModifier
 				return Option.Return<V3>( );
 			}
 
+		}
+
+		public V3 Scale
+		{
+			get
+			{
+				return new V3( XScale.Text.Float( ) , YScale.Text.Float( ) , ZScale.Text.Float( ) ); 
+			}
+			set
+			{
+				var x = value.X;
+				var y = value.Y;
+				var z = value.Z;
+				XScale.Text = x.ToString();
+				YScale.Text = y.ToString();
+				ZScale.Text = z.ToString();
+			}
 		}
 
 		public int BoneID

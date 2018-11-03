@@ -47,6 +47,10 @@
 			this.label3 = new System.Windows.Forms.Label();
 			this.label4 = new System.Windows.Forms.Label();
 			this.modFormModelBindingSource = new System.Windows.Forms.BindingSource(this.components);
+			this.label5 = new System.Windows.Forms.Label();
+			this.XScale = new System.Windows.Forms.TextBox();
+			this.ZScale = new System.Windows.Forms.TextBox();
+			this.YScale = new System.Windows.Forms.TextBox();
 			this.menuStrip1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.FactorBar)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.RadiusBar)).BeginInit();
@@ -197,11 +201,48 @@
 			// 
 			this.modFormModelBindingSource.DataSource = typeof(SharpDXTest.ModFormModel);
 			// 
+			// label5
+			// 
+			this.label5.AutoSize = true;
+			this.label5.Location = new System.Drawing.Point(26, 329);
+			this.label5.Name = "label5";
+			this.label5.Size = new System.Drawing.Size(32, 12);
+			this.label5.TabIndex = 15;
+			this.label5.Text = "scale";
+			// 
+			// XScale
+			// 
+			this.XScale.Location = new System.Drawing.Point(91, 322);
+			this.XScale.Name = "XScale";
+			this.XScale.Size = new System.Drawing.Size(103, 19);
+			this.XScale.TabIndex = 16;
+			this.XScale.Text = "0";
+			// 
+			// ZScale
+			// 
+			this.ZScale.Location = new System.Drawing.Point(309, 322);
+			this.ZScale.Name = "ZScale";
+			this.ZScale.Size = new System.Drawing.Size(103, 19);
+			this.ZScale.TabIndex = 17;
+			this.ZScale.Text = "0";
+			// 
+			// YScale
+			// 
+			this.YScale.Location = new System.Drawing.Point(200, 322);
+			this.YScale.Name = "YScale";
+			this.YScale.Size = new System.Drawing.Size(103, 19);
+			this.YScale.TabIndex = 18;
+			this.YScale.Text = "0";
+			// 
 			// SphereModForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(429, 332);
+			this.ClientSize = new System.Drawing.Size(429, 369);
+			this.Controls.Add(this.YScale);
+			this.Controls.Add(this.ZScale);
+			this.Controls.Add(this.XScale);
+			this.Controls.Add(this.label5);
 			this.Controls.Add(this.label4);
 			this.Controls.Add(this.label3);
 			this.Controls.Add(this.MorphNameBox);
@@ -249,5 +290,9 @@
 		private System.Windows.Forms.Label label3;
 		private System.Windows.Forms.Label label4;
 		private System.Windows.Forms.BindingSource modFormModelBindingSource;
+		private System.Windows.Forms.Label label5;
+		private System.Windows.Forms.TextBox XScale;
+		private System.Windows.Forms.TextBox ZScale;
+		private System.Windows.Forms.TextBox YScale;
 	}
 }

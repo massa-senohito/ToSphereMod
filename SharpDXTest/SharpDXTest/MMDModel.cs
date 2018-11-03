@@ -325,10 +325,11 @@ namespace SharpDXTest
 			}
 		}
 
-		public void ToSphere( Vector3 pos , bool add = false )
+		public void ToSphere( Matrix pivot , bool add = false )
 		{
-			Cast.Offset = pos;
-
+			pivot.Decompose( out Vector3 scale , out Quaternion rot , out Vector3 trans );
+			Cast.Offset = trans;
+			Cast.Rot = rot.RotMat();
 			// ミラーの場合、元のモデルに対して変更を行うと上書きになってしまう
 			// 順序が生まれてしまうが、変更後に対して作用させる
 			var originalVertPos = add ?
@@ -341,6 +342,11 @@ namespace SharpDXTest
 				Vertice[ i ].Position = castedVertice[ i ];
 			}
 			Mesh.SetOnly( Vertice , Index.ToArray( ) );
+		}
+
+		public void ToSphere( Vector3 pos , bool add = false )
+		{
+			ToSphere( Matrix.Translation( pos ) , add);
 		}
 
 		public IEnumerable<MMDataIO.Pmx.PmxMorphVertexData> DifferVert()
