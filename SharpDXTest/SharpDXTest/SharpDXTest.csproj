@@ -72,6 +72,8 @@
     <Compile Include="DebugLine.cs" />
     <Compile Include="DraggableAxis.cs" />
     <Compile Include="Frame3f.cs" />
+    <Compile Include="Interpolation.cs" />
+    <Compile Include="LatticeDef.cs" />
     <Compile Include="Material.cs" />
     <Compile Include="MMDModel.cs" />
     <Compile Include="ModFormModel.cs" />

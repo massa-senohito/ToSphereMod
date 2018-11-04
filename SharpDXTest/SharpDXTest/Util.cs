@@ -178,6 +178,10 @@ namespace SharpDXTest
 			return v.IsNearlyEqual( 0.0f , eps );
 		}
 
+		public static int FloorToInt( this float v )
+		{
+			return (int)Math.Floor( v );
+		}
 
 		public static float Float( this string s )
 		{
@@ -218,6 +222,17 @@ namespace SharpDXTest
 			{
 				yield return ParseFaceCSV( item );
 			}
+		}
+
+		public static int FirstIndex<T>( this T[] items , System.Predicate<T> f )
+		{
+			var c = items.Length;
+			for ( int i = 0 ; i < c ; i++ )
+			{
+				if ( f( items[ i ] ) )
+					return i;
+			}
+			return -1;
 		}
 
 		public static string ConcatStr<T>( this IEnumerable<T> items )

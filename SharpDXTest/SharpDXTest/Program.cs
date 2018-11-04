@@ -258,7 +258,7 @@ namespace Platform
 #endif
 			Model.ToSphere( Axis.World );
 			//Model.ToSphere( Axis.Position);
-			//Model.ToSphere( Axis.Position.InvX( ) , true );
+			Model.ToSphere( Axis.World.InvX( ) , true );
 
 			PostViewUpdate( device );
 

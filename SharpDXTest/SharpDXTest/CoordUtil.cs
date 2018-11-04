@@ -15,6 +15,18 @@ namespace SharpDXTest
 		{
 			return new Vector3( -v.X , v.Y , v.Z );
 		}
+		public static Vector3 InvZ( this Vector3 v )
+		{
+			return new Vector3(  v.X , v.Y , -v.Z );
+		}
+
+		public static Matrix InvX( this Matrix matrix )
+		{
+			var invX = matrix.TranslationVector.InvX( ).TransMat();
+			matrix.Decompose( out Vector3 scale , out Quaternion rot , out Vector3 trans );
+			var rotMat = new Quaternion( rot.X , -rot.Y , -rot.Z , rot.W ).RotMat();
+			return rotMat * invX;
+		}
 
 		public static string Csv( this Vector3 v )
 		{
