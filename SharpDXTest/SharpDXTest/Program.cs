@@ -39,6 +39,7 @@ namespace Platform
 		static Mouse Mouse = new Mouse( );
 		static RenderForm Form;
 		static BlenderModifier.SphereModForm ModForm = new BlenderModifier.SphereModForm( );
+		static LatticeForm LatticeForm;
 
 		static void OnResizeForm( float ratio , SharpDevice device )
 		{
@@ -156,7 +157,7 @@ namespace Platform
 
 		private static void OnScaleChanged( object sender , EventArgs e )
 		{
-			Model.CastScale( ModForm.Scale );
+			Model.CastScale( ModForm.ToSphereScale );
 		}
 
 		private static void Form_FormClosed( object sender , FormClosedEventArgs e )
@@ -259,6 +260,8 @@ namespace Platform
 			Model.ToSphere( Axis.World );
 			//Model.ToSphere( Axis.Position);
 			Model.ToSphere( Axis.World.InvX( ) , true );
+
+			LatticeForm.Update( );
 
 			PostViewUpdate( device );
 

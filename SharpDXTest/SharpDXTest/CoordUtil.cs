@@ -238,9 +238,5 @@ namespace SharpDXTest
 			return rot.EulerAngle( );
 		}
 
-		public static void SetPosition( this TexturedVertex vert , Vector3 pos )
-		{
-			vert.Position = pos;
-		}
 	}
 }

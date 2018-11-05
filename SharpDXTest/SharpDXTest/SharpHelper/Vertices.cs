@@ -35,7 +35,11 @@ namespace SharpHelper
 			Normal = normal;
             TextureCoordinate = textureCoordinate;
         }
-    }
+		public override string ToString()
+		{
+			return Position.ToString();
+		}
+	}
 
     /// <summary>
     /// Static Vertex

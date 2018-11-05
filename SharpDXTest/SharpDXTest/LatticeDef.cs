@@ -1,4 +1,5 @@
-﻿using SharpDX;
+﻿//#define INTERPOLATION
+using SharpDX;
 using SharpDXTest;
 using SharpHelper;
 using System.Collections;
@@ -11,15 +12,14 @@ public class LatticeDef
 {
   public bool EnableVertexGroup;
   //BKE_lattice_resize,calc_latt_deformで
-  public int[] uvw = new int[3];//分割数
+  public int[] UVW = new int[3];//分割数
   float fu, du;
   float fv, dv;
   float fw, dw;
   KEYType keytype;
   Matrix4x4 latma;
   //Matrix4x4 myself;
-  public Matrix lattice;
-  public Vertex[] latticedata;//ラティスの頂点座標
+  public Vertex[] LatticeData;//ラティスの頂点座標
   Vector3[] dvert = new Vector3[1];//頂点ウェイトグループ
   Vertex[] verts;
   Vertex[] overts;//オリジナル頂点
@@ -104,18 +104,19 @@ public class LatticeDef
     var ffu = fu;
     var ffv = fv;
     var ffw = fw;
-    for (int w = 0; w < uvw[2]; w++, fw += dw)
+    for (int w = 0; w < UVW[2]; w++, fw += dw)
     {
-      for (int v = 0; v < uvw[1]; v++, fv += dv)
+      for (int v = 0; v < UVW[1]; v++, fv += dv)
       {
-        for (int u = 0; u < uvw[0]; u++,
+        for (int u = 0; u < UVW[0]; u++,
           //bp++, co += 3, fp += 3, 
           fu += du)
         {
-          //if()//coがあるなら,無いと仮定
-          latticedata[id].SetPosition( latticedata[id].Position - new Vector3(fu,fv,fw) );
+					//if()//coがあるなら,無いと仮定
+					Vector3 pos = LatticeData[ id ].Position - new Vector3( fu , fv , fw );
+					LatticeData[ id ].Position = ( pos );
 		  //latmatをかけて行列を戻す
-	      latticedata[ id ].SetPosition( mul_mat3_m4_v3( imat , latticedata[ id ].Position ) );
+	      LatticeData[ id ].Position = ( mul_mat3_m4_v3( imat , LatticeData[ id ].Position ) );
           id++;
         }
         fu = ffu;
@@ -126,11 +127,25 @@ public class LatticeDef
     latma = latmat;
   }
 
-  // Use this for initialization
-  int topind;
-  Interpolation.Elastic interp;
-  public float val=2, pow=10, sca=1;
-  public int bou=7;
+	// Use this for initialization
+	// デバッグ用
+	int topind;
+#if INTERPOLATION
+	Interpolation.Elastic interp;
+	public float val = 2, pow = 10, sca = 1;
+	public int bou = 7;
+#endif
+
+	public LatticeDef( MMDModel model , int[] divs = null )
+	{
+		if ( divs == null )
+		{
+			divs = new int[ 3 ] { 3 , 3 , 3 };
+		}
+		UVW = divs;
+		Start( model );
+		//LatticeData は BKE_lattice_resize, init_latt_deform で初期化されている
+	}
 
   void Start(MMDModel model)
   {
@@ -142,8 +157,10 @@ public class LatticeDef
     NotifyChanged();
     init_latt_deform();
     lattice_deform_vertsFull();
-	topind = latticedata.FirstIndex( l => SamePos( l.Position , new Vector3( 0 , 1 , 0 ) ) );
-    interp = new Interpolation.Elastic(2, 10, 7, 1);
+	topind = LatticeData.FirstIndex( l => SamePos( l.Position , new Vector3( 0 , 1 , 0 ) ) );
+#if INTERPOLATION
+		interp = new Interpolation.Elastic(2, 10, 7, 1);
+#endif
   }
 	void OnApplicationQuit()
 	{
@@ -151,12 +168,14 @@ public class LatticeDef
 			mesh.Vertice
 			  = overts;
 	}
+
   void NotifyChanged()
   {
     latma = //Matrix4x4.TRS(lattice.localPosition, lattice.rotation, lattice.localScale);
       Matrix4x4.Identity;
-    BKE_lattice_resize(uvw[0], uvw[1], uvw[2]);
+    BKE_lattice_resize(UVW[0], UVW[1], UVW[2]);
   }
+
   struct BPoint
   {
     float[] vec;
@@ -167,21 +186,25 @@ public class LatticeDef
     float radius, pad;
     //ユーザーによって決められたベベル等のためのポイントごとの半径
   }
+
   int LT_GRID = 1;
   int gridFlag = 1;
   const int LT_ACTBP_NONE = -1;// object_latticeで使われる、標準ではactbpの初期値 
   //active element index
   int actbp = LT_ACTBP_NONE;
-  //#define LT_OUTSIDE	2
+	//#define LT_OUTSIDE	2
 
-  //#define LT_DS_EXPAND	4 anim_channelで使われている
-  //curve_deform_vectorはアーマチュアで使われている
-  //outside_latticeはrnaから、後方互換を保つ意味でやっているらしい、bepuikで作ったファイルとも保障されるのだろうか
-  enum KEYType
+	//#define LT_DS_EXPAND	4 anim_channelで使われている
+	//curve_deform_vectorはアーマチュアで使われている
+	//outside_latticeはrnaから、後方互換を保つ意味でやっているらしい、bepuikで作ったファイルとも保障されるのだろうか
+
+	enum KEYType
   {
     KEY_LINEAR, KEY_CARDINAL, KEY_BSPLINE, KEY_CATMULL_ROM,
   };
+
   bool alreadyCreate = false;
+
   void key_curve_position_weights(float t, float[] data, KEYType type)
   {
     float t2, t3, fc;
@@ -245,7 +268,7 @@ public class LatticeDef
     var vec = latma.TransByMat( co.Position );
     float u, v, w;
     int ui, vi, wi;
-    if (uvw[0] > 1)
+    if (UVW[0] > 1)
     {
       u = (vec[0] - fu) / du;
       ui = Util.FloorToInt(u);
@@ -258,7 +281,7 @@ public class LatticeDef
       ui = 0;
     }
 
-    if (uvw[1] > 1)
+    if (UVW[1] > 1)
     {
       v = (vec[1] - fv) / dv;
       vi = Util.FloorToInt(v);
@@ -270,7 +293,7 @@ public class LatticeDef
       tv[0] = tv[2] = tv[3] = 0.0f; tv[1] = 1.0f;
       vi = 0;
     }
-    if (uvw[2] > 1)
+    if (UVW[2] > 1)
     {
       w = (vec[2] - fw) / dw;
       wi = Util.FloorToInt(w);
@@ -294,8 +317,8 @@ public class LatticeDef
         if (ww > 0)
         {
           //idx_wをwi-1 * uの分割 *vの分割
-          if (ww < uvw[2]) idx_w = ww * uvw[0] * uvw[1];
-          else             idx_w = (uvw[2] - 1) * uvw[0] * uvw[1];
+          if (ww < UVW[2]) idx_w = ww * UVW[0] * UVW[1];
+          else             idx_w = (UVW[2] - 1) * UVW[0] * UVW[1];
         }
         else
         {
@@ -308,8 +331,8 @@ public class LatticeDef
           {
             if (vv > 0)
             {
-              if (vv < uvw[1]) idx_v = idx_w + vv * uvw[0];
-              else             idx_v = idx_w + (uvw[1] - 1) * uvw[0];
+              if (vv < UVW[1]) idx_v = idx_w + vv * UVW[0];
+              else             idx_v = idx_w + (UVW[1] - 1) * UVW[0];
             }
             else
             {
@@ -323,15 +346,15 @@ public class LatticeDef
               {
                 if (uu > 0)
                 {
-                  if (uu < uvw[0]) idx_u = idx_v + uu;
-                  else             idx_u = idx_v + (uvw[0] - 1);
+                  if (uu < UVW[0]) idx_u = idx_v + uu;
+                  else             idx_u = idx_v + (UVW[0] - 1);
                 }
                 else
                 {
                   idx_u = idx_v;
                 }
-                var ldata = latticedata[latticedata.Length- idx_u-1];
-                co.SetPosition( co.Position + ldata.Position * (u) );
+                var ldata = LatticeData[LatticeData.Length- idx_u-1];
+                co.Position = ( co.Position + ldata.Position * (u) );
 
                 //co += transform.localPosition;
                 //頂点グループが設定されているならウェイトをもらってきて計算に入れる
@@ -364,6 +387,7 @@ public class LatticeDef
   }
 
   //リサイズ部分以外終わり
+  // latice割数を増やす
   void BKE_lattice_resize(int uNew, int vNew, int wNew)//, Object *ltOb)
   {
     //頂点ウェイトグループはすべて開放される
@@ -378,6 +402,7 @@ public class LatticeDef
       else if (vNew >= uNew && vNew >= wNew) vNew--;
       else wNew--;
     }
+
     var vertexCos = new TexturedVertex[uNew * vNew * wNew];//tmp_vcos
     var fudu = calc_lat_fudu(gridFlag, uNew);
     var fvdv = calc_lat_fudu(gridFlag, vNew);
@@ -385,21 +410,22 @@ public class LatticeDef
     if (alreadyCreate)
     {
       //1分割まで減らされたり、元から1分割でないなら
-      if (uNew != 1 && uvw[0] != 1)
+      if (uNew != 1 && UVW[0] != 1)
       {
-        du = (uvw[0] - 1) * du / (uNew - 1);
+        du = (UVW[0] - 1) * du / (uNew - 1);
       }
 
-      if (vNew != 1 && uvw[1] != 1)
+      if (vNew != 1 && UVW[1] != 1)
       {
-        dv = (uvw[1] - 1) * dv / (vNew - 1);
+        dv = (UVW[1] - 1) * dv / (vNew - 1);
       }
 
-      if (wNew != 1 && uvw[2] != 1)
+      if (wNew != 1 && UVW[2] != 1)
       {
-        dw = (uvw[2] - 1) * dw / (wNew - 1);
+        dw = (UVW[2] - 1) * dw / (wNew - 1);
       }
     }
+
     var co = vertexCos;
     fu = fudu[0];
     du = fudu[1];
@@ -407,6 +433,7 @@ public class LatticeDef
     dv = fvdv[1];
     fw = fwdw[0];
     dw = fwdw[1];
+
     float wc = fw;
     float vc = fv;
     float uc = fu;
@@ -420,7 +447,7 @@ public class LatticeDef
         for (int u = 0; u < uNew; u++, coi++, uc += du)
         {
           var cv = new Vector3(uc, vc, wc);
-          co[coi].SetPosition( cv );
+          co[coi].Position = ( cv );
         }
       }
     }
@@ -452,12 +479,12 @@ public class LatticeDef
       //lt->typew = typew;
     }
     alreadyCreate = true;
-    uvw[0] = uNew;
-    uvw[1] = vNew;
-    uvw[2] = wNew;
+    UVW[0] = uNew;
+    UVW[1] = vNew;
+    UVW[2] = wNew;
     actbp = LT_ACTBP_NONE;
     //bpの処理をしていないが、これでいいはず
-    latticedata = co;
+    LatticeData = co;
   }
 
   private void interp_v3_v3v3(Vector3 co1, Vector3 co_prev, Vector3 co2, float weight_blend)
@@ -465,23 +492,23 @@ public class LatticeDef
     throw new System.NotImplementedException();
   }
 
-  Vector3[] modifiedVertice;
   // Update is called once per frame
   public Matrix4x4 toworld;
-  public bool iamunity;
-  void FixedUpdate()
+
+  public void FixedUpdate()
   {
     //03 13 23が座標
     lattice_deform_vertsFull();
 #if false
 		//toworld = gameObject.transform.localToWorldMatrix;
 #endif
-
+#if INTERPOLATION
 		interp.SetValue(val, pow, bou, sca);
+#endif
 
-    for (int id = 0; id < latticedata.Length; id++)
+    for (int id = 0; id < LatticeData.Length; id++)
     {
-      var ld = latticedata[id];
+      var ld = LatticeData[id];
       var pos = ld.Position + mesh.Position;
       //todo latトランスフォームを正しく計算すれば表示位置がおかしい問題もスケールポジションが未実装なのも解決するはず
       //子に移動してみても問題は無い、ラティスの行列計算が思ったのと異なる計算、blenderのに合わせるべし
@@ -569,9 +596,5 @@ public class LatticeDef
     }
 #endif
   }
-  public LatticeDef()
-  {
-    //Start();
-    //FixedUpdate();
-  }
+
 }

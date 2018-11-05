@@ -136,7 +136,7 @@ namespace BlenderModifier
 
 		}
 
-		public V3 Scale
+		public V3 ToSphereScale
 		{
 			get
 			{
