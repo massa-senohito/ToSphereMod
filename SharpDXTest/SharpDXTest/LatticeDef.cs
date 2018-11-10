@@ -19,23 +19,34 @@ using LatticeType =
 
 public class LatticeDef
 {
+
   public bool EnableVertexGroup;
+
   //BKE_lattice_resize,calc_latt_deformで
+
   public int[] UVW = new int[3];//分割数
   float fu, du;
   float fv, dv;
   float fw, dw;
+
   KEYType keytype;
+
   Matrix4x4 latma;
+
   //Matrix4x4 myself;
   public LatticeType LatticeData = new LatticeType();//ラティスの頂点座標
+
   public List<ReactiveProperty<string>> LatticeString = new List<ReactiveProperty<string>> ();
+
   Vector3[] dvert = new Vector3[1];//頂点ウェイトグループ
+
   Vertex[] verts;
+
   Vertex[] overts;//オリジナル頂点
   
   MMDModel mesh;
-  public float factor;
+
+  public float factor = 1;
 
   void lattice_deform_vertsFull()
   {
@@ -162,7 +173,7 @@ public class LatticeDef
   {
 	mesh = model;//GetComponent<MeshFilter>().mesh;
 
-    keytype = KEYType.KEY_BSPLINE;
+    keytype = KEYType.KEY_LINEAR;
     overts = mesh.OrigVertice;
     verts = mesh.Vertice;
     NotifyChanged();
@@ -266,9 +277,11 @@ public class LatticeDef
   //頂点数だけculcする,done
   void calc_latt_deform(ref Vertex co, float weight)
   {
+
     float[] tu = new float[4], tv = new float[4], tw = new float[4];
     //obは対象オブジェクト
     int defgrp_index = -1;
+
     Vector3 co_prev = sv(0);
     float weight_blend = 0;
     if (EnableVertexGroup)
@@ -364,7 +377,12 @@ public class LatticeDef
                 {
                   idx_u = idx_v;
                 }
-								var ldata = LatticeData[ LatticeData.Count - idx_u - 1 ];
+								int v1 = LatticeData.Count - idx_u - 1;
+								var ldata = LatticeData[ v1 ];
+								if ( v1 == 0 && uu == 2)
+								{
+									Util.DebugWrite( ldata.Value.Position.ToString( )  + " " + u);
+								}
                 co.Position = ( co.Position + ldata.Value.Position * (u) );
 
                 //co += transform.localPosition;
@@ -593,8 +611,11 @@ public class LatticeDef
   }
 
   float toward;//0~1
+
   float current;
-  float nobiritu=0.05f;
+
+	float nobiritu = 0.05f;
+
   void Update()
   {
 		//var one = new Vector3(1, 1, 1);

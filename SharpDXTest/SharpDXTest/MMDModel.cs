@@ -15,28 +15,7 @@ using Vert = SharpHelper.TexturedVertex;
 namespace SharpDXTest
 {
 
-
-	[StructLayout( LayoutKind.Explicit )]
-	public struct GPUData
-	{
-		[FieldOffset( 0 )]
-		public Matrix World;
-
-		[FieldOffset( 64 )]
-		public Matrix View;
-
-		[FieldOffset( 128 )]
-		public Matrix WorldViewProjection;
-
-		[FieldOffset( 128 + 64 )]
-		public float Alpha;
-		
-		// 2の乗数（128bit）でないと例外が起きるので詰め物をする
-		[FieldOffset( 512 - 4 )]
-		public float NULL;
-	}
-
-	public class MMDModel : System.IDisposable
+	public class MMDModel : ModelInWorld , System.IDisposable
 	{
 		public Vert[] Vertice;
 
@@ -166,70 +145,20 @@ namespace SharpDXTest
 			Cast = new SphereCast( Matrix.Zero );
 		}
 
-		protected SharpMesh Mesh;
-		Buffer GPUDataBuffer;
 		Buffer MaterialDataBuffer;
-		GPUData GpuData;
-		SharpShader Shader;
-		VertexShaderStage VertexShader;
-		PixelShaderStage PixelShader;
+
 
 		public void LoadTexture( SharpDevice device )
 		{
 
 			Mesh = GetSharpMesh( device );
 
-			//init shader
-			Shader = new SharpShader( device , "../../HLSLModel.txt" ,
-				new SharpShaderDescription( ) { VertexShaderFunction = "VS" , PixelShaderFunction = "PS" } ,
-				new InputElement[] {
-						new InputElement("POSITION", 0, Format.R32G32B32_Float, 0, 0),
-						new InputElement("NORMAL"  , 0, Format.R32G32B32_Float, 12, 0),
-						new InputElement("TEXCOORD", 0, Format.R32G32_Float, 24, 0)
-				} );
-			GPUDataBuffer = Shader.CreateBuffer<GPUData>( );
+			PrepareShader( device , "../../HLSLModel.txt" );
+
 			MaterialDataBuffer = Shader.CreateBuffer<MaterialGPUData>( );
-			VertexShader = device.DeviceContext.VertexShader;
-			PixelShader = device.DeviceContext.PixelShader;
-
 		}
 
-		public Matrix World = Matrix.Identity;
 
-		bool IsDirty = false;
-
-		public Vector3 Position
-		{
-			get
-			{
-				return World.TranslationVector;
-			}
-			set
-			{
-				World.TranslationVector = value;
-				IsDirty = true;
-				//Util.DebugWrite(World.TransByMat(Vector3.UnitX).ToString());
-
-
-			}
-		}
-
-		public Quaternion Rotation
-		{
-			get
-			{
-				World.Decompose( out Vector3 scale , out Quaternion rot , out Vector3 trans );
-				return rot;
-			}
-			set
-			{
-				// rotationをなくさないと相対回転になる
-				var pos = Position;
-				World = Matrix.RotationQuaternion( value );
-				Position = pos;
-				IsDirty = true;
-			}
-		}
 
 		public float Alpha
 		{
@@ -268,17 +197,8 @@ namespace SharpDXTest
 			}
 			IsDirty = false;
 
-			//apply shader
-			Shader.Apply( );
+			SendGPUData( device , View , Projection );
 
-			//apply constant buffer to shader
-			VertexShader.SetConstantBuffer( 0 , GPUDataBuffer );
-			PixelShader.SetConstantBuffer( 0 , GPUDataBuffer );
-
-			GpuData.View = View;
-			GpuData.WorldViewProjection = World * View * Projection;
-			GpuData.World = World;
-			device.UpdateData( GPUDataBuffer , GpuData );
 			Mesh.Begin( );
 			for ( int i = 0 ; i < Mesh.SubSets.Count ; i++ )
 			{

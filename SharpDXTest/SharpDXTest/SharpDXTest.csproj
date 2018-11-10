@@ -112,6 +112,7 @@
     </Compile>
     <Compile Include="Material.cs" />
     <Compile Include="MMDModel.cs" />
+    <Compile Include="ModelInWorld.cs" />
     <Compile Include="ModFormModel.cs" />
     <Compile Include="Option.cs" />
     <Compile Include="PMXLoader.cs" />

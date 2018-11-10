@@ -232,22 +232,24 @@ namespace SharpHelper
             return mesh;
         }
 
-        /// <summary>
-        /// Create a quad for Multiple Render Target
-        /// </summary>
-        /// <param name="device">Device</param>
-        /// <returns>Mesh</returns>
-        public static SharpMesh CreateQuad(SharpDevice device)
+		/// <summary>
+		/// Create a quad for Multiple Render Target
+		/// </summary>
+		/// <param name="device">Device</param>
+		/// <returns>Mesh</returns>
+		public static SharpMesh CreateQuad( SharpDevice device , float size = 1 , bool IsDoubleSide = false)
         {
             Vector3[] vertices = new Vector3[]
             {
-                new Vector3(-1, 1, 0),
-                new Vector3(-1, -1, 0),
-                new Vector3(1, 1, 0),
-                new Vector3(1, -1, 0)
+                new Vector3(-1 * size, 1 * size, 0),
+                new Vector3(-1 * size, -1 * size, 0),
+                new Vector3(1 * size, 1 * size, 0),
+                new Vector3(1 * size, -1 * size, 0)
             };
 
-            int[] indices = new int[] { 0, 2, 1, 2, 3, 1 };
+			int[] indices = IsDoubleSide
+				? new int[] { 0 , 2 , 1 , 2 , 3 , 1 , 1 , 2 , 0 , 3 , 2 , 1 }
+				: new int[] { 0, 2, 1, 2, 3, 1 };
             SharpMesh mesh = new SharpMesh(device);
             mesh.VertexBuffer = Buffer11.Create<Vector3>(device.Device, BindFlags.VertexBuffer, vertices.ToArray());
             mesh.IndexBuffer = Buffer11.Create(device.Device, BindFlags.IndexBuffer, indices.ToArray());

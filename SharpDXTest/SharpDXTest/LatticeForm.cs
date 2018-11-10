@@ -19,13 +19,19 @@ namespace SharpDXTest
 {
 	public partial class LatticeForm : Form
 	{
-		List<SharpMesh> LatticePoint = new List<SharpMesh>();
+		List<ModelInWorld> LatticePoint = new List<ModelInWorld>();
 
-		public LatticeForm(MMDModel model)
+		public LatticeForm(MMDModel model, SharpDevice device)
 		{
 			InitializeComponent( );
 
 			Lattice = new LatticeDef( model );
+
+			foreach ( var item in Lattice.LatticeData )
+			{
+				var pos = item.Value.Position;
+				LatticePoint.Add( ModelInWorld.Create( SharpMesh.CreateQuad( device , 0.1f , true) , pos.TransMat( ) , "../../HLSL.txt") );
+			}
 
 			var lats = new[]
 			{
@@ -52,16 +58,21 @@ namespace SharpDXTest
 			//Lat.BindTo( Lattice , x=>x.LatticeData[0] , BindingMode.TwoWay , targetUpdateTrigger:)
 		}
 
-		public void Update()
+		public void FixedUpdate( Matrix View , Matrix Projection )
 		{
 			Lattice.FixedUpdate( );
-			foreach ( var point in LatticePoint )
-			{
 
+			//foreach ( var point in LatticePoint )
+			for ( int i = 0 ; i < LatticePoint.Count ; i++ )
+			{
+				var point = LatticePoint[ i ];
+
+				point.Position = Lattice.LatticeData[ i ].Value.Position;
+				point.DrawAllSubSet( View , Projection );
 			}
 			//Lattice.LatticeData[ 1 ].Value = new TexturedVertex( Vector3.One , Vector3.One , Vector2.One );
 		}
-		//public List<ReactiveProperty<TexturedVertex>> Lat { get; } = new List<ReactiveProperty<TexturedVertex>>();
+
 		LatticeDef Lattice;
 	}
 }

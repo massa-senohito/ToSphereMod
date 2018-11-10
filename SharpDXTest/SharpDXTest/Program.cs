@@ -2,6 +2,7 @@
 //#define CUBEMAP
 //#define MODELCLK
 //#define DEBUGLINE
+#define ENABLE_SPHERE
 #define FONT
 
 using System;
@@ -124,6 +125,8 @@ namespace Platform
 
 			using ( SharpDevice device = new SharpDevice( Form ) )
 			{
+				LatticeForm = new LatticeForm( Model , device);
+				LatticeForm.Show( );
 
 				Model.LoadTexture( device );
 				Axis.LoadTexture( device );
@@ -193,8 +196,7 @@ namespace Platform
 				//PMXLoader.WriteTestCSV( V );
 				LoadedFromDialog = new PMXLoader( V );
 				Model = LoadedFromDialog.MMDModel;
-				LatticeForm = new LatticeForm( Model );
-				LatticeForm.Show( );
+
 				NormalStart( );
 			}
 
@@ -259,11 +261,13 @@ namespace Platform
 #if DEBUGLINE
 			Line.Update(device, View , Projection);
 #endif
-			Model.ToSphere( Axis.World );
-			//Model.ToSphere( Axis.Position);
-			Model.ToSphere( Axis.World.InvX( ) , true );
 
-			LatticeForm.Update( );
+#if ENABLE_SPHERE
+			Model.ToSphere( Axis.World );
+			Model.ToSphere( Axis.World.InvX( ) , true );
+#else
+			LatticeForm.FixedUpdate( View , Projection );
+#endif
 
 			PostViewUpdate( device );
 
