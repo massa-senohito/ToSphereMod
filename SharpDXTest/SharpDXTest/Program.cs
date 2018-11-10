@@ -193,6 +193,8 @@ namespace Platform
 				//PMXLoader.WriteTestCSV( V );
 				LoadedFromDialog = new PMXLoader( V );
 				Model = LoadedFromDialog.MMDModel;
+				LatticeForm = new LatticeForm( Model );
+				LatticeForm.Show( );
 				NormalStart( );
 			}
 

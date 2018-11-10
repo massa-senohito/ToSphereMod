@@ -1,12 +1,21 @@
 ﻿//#define INTERPOLATION
+using Reactive.Bindings;
 using SharpDX;
 using SharpDXTest;
 using SharpHelper;
 using System.Collections;
+using System.Collections.Generic;
+using System;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Threading;
+using Reactive.Bindings;
+using Reactive.Bindings.Extensions;
 using Matrix4x4 = SharpDX.Matrix;
 using Vertex = SharpHelper.TexturedVertex;
+using LatticeType = 
+	System.Collections.Generic.List<Reactive.Bindings.ReactiveProperty<SharpHelper.TexturedVertex>>;
+	//System.Collections.Generic.List<SharpHelper.TexturedVertex>;
 
 public class LatticeDef
 {
@@ -19,7 +28,8 @@ public class LatticeDef
   KEYType keytype;
   Matrix4x4 latma;
   //Matrix4x4 myself;
-  public Vertex[] LatticeData;//ラティスの頂点座標
+  public LatticeType LatticeData = new LatticeType();//ラティスの頂点座標
+  public List<ReactiveProperty<string>> LatticeString = new List<ReactiveProperty<string>> ();
   Vector3[] dvert = new Vector3[1];//頂点ウェイトグループ
   Vertex[] verts;
   Vertex[] overts;//オリジナル頂点
@@ -113,10 +123,11 @@ public class LatticeDef
           fu += du)
         {
 					//if()//coがあるなら,無いと仮定
-					Vector3 pos = LatticeData[ id ].Position - new Vector3( fu , fv , fw );
-					LatticeData[ id ].Position = ( pos );
+					Vertex value = LatticeData[ id ].Value;
+					Vector3 pos = value.Position - new Vector3( fu , fv , fw );
+					value.Position = ( pos );
 		  //latmatをかけて行列を戻す
-	      LatticeData[ id ].Position = ( mul_mat3_m4_v3( imat , LatticeData[ id ].Position ) );
+	      value.Position = ( mul_mat3_m4_v3( imat , value.Position ) );
           id++;
         }
         fu = ffu;
@@ -157,7 +168,7 @@ public class LatticeDef
     NotifyChanged();
     init_latt_deform();
     lattice_deform_vertsFull();
-	topind = LatticeData.FirstIndex( l => SamePos( l.Position , new Vector3( 0 , 1 , 0 ) ) );
+	topind = LatticeData.FirstIndex( l => SamePos( l.Value.Position , new Vector3( 0 , 1 , 0 ) ) );
 #if INTERPOLATION
 		interp = new Interpolation.Elastic(2, 10, 7, 1);
 #endif
@@ -353,8 +364,8 @@ public class LatticeDef
                 {
                   idx_u = idx_v;
                 }
-                var ldata = LatticeData[LatticeData.Length- idx_u-1];
-                co.Position = ( co.Position + ldata.Position * (u) );
+								var ldata = LatticeData[ LatticeData.Count - idx_u - 1 ];
+                co.Position = ( co.Position + ldata.Value.Position * (u) );
 
                 //co += transform.localPosition;
                 //頂点グループが設定されているならウェイトをもらってきて計算に入れる
@@ -483,9 +494,16 @@ public class LatticeDef
     UVW[1] = vNew;
     UVW[2] = wNew;
     actbp = LT_ACTBP_NONE;
-    //bpの処理をしていないが、これでいいはず
-    LatticeData = co;
+		//bpの処理をしていないが、これでいいはず
+		LatticeString = co.Select( x => new ReactiveProperty<string>( x.ToString( ) ) ).ToList();
+		LatticeData = LatticeString.Select( reactiveProperty ) .ToList( );
+
   }
+	ReactiveProperty<Vertex> reactiveProperty( ReactiveProperty<string> x )
+	{
+		return x.ToReactivePropertyAsSynchronized( v => v.Value , convert: Vertex.FromString ,
+					convertBack: xd => xd.ToString() );
+	}
 
   private void interp_v3_v3v3(Vector3 co1, Vector3 co_prev, Vector3 co2, float weight_blend)
   {
@@ -506,10 +524,10 @@ public class LatticeDef
 		interp.SetValue(val, pow, bou, sca);
 #endif
 
-    for (int id = 0; id < LatticeData.Length; id++)
+    for (int id = 0; id < LatticeData.Count; id++)
     {
       var ld = LatticeData[id];
-      var pos = ld.Position + mesh.Position;
+      var pos = ld.Value.Position + mesh.Position;
       //todo latトランスフォームを正しく計算すれば表示位置がおかしい問題もスケールポジションが未実装なのも解決するはず
       //子に移動してみても問題は無い、ラティスの行列計算が思ったのと異なる計算、blenderのに合わせるべし
       //  頂点シェーダに移植

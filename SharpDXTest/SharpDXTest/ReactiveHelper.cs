@@ -6,6 +6,7 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace SharpDXTest
 {
@@ -19,6 +20,14 @@ namespace SharpDXTest
 				removeHandler )
 				.ToUnit( );
 			return eve2;
+		}
+		public static IObservable<Unit> TextBoxChanged( TextBox textBox )
+		{
+			return Observable.FromEvent<EventHandler , EventArgs>(
+				h => ( s , e ) => h( e ) ,
+				h => textBox.TextChanged += h ,
+				h => textBox.TextChanged -= h )
+				.ToUnit( );
 		}
 	}
 }

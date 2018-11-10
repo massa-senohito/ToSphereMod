@@ -35,9 +35,16 @@ namespace SharpHelper
 			Normal = normal;
             TextureCoordinate = textureCoordinate;
         }
+
 		public override string ToString()
 		{
-			return Position.ToString();
+			return Position.X + " " + Position.Y + " " + Position.Z;
+		}
+
+		public static TexturedVertex FromString( string v )
+		{
+			var v3 = v.Split( ' ' ).Select(float.Parse).ToArray();
+			return new TexturedVertex( new Vector3( v3 ) , Vector3.Zero , Vector2.Zero );
 		}
 	}
 

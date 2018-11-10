@@ -224,9 +224,9 @@ namespace SharpDXTest
 			}
 		}
 
-		public static int FirstIndex<T>( this T[] items , System.Predicate<T> f )
+		public static int FirstIndex<T>( this List<T> items , System.Predicate<T> f )
 		{
-			var c = items.Length;
+			var c = items.Count;
 			for ( int i = 0 ; i < c ; i++ )
 			{
 				if ( f( items[ i ] ) )

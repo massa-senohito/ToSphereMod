@@ -19,19 +19,49 @@ namespace SharpDXTest
 {
 	public partial class LatticeForm : Form
 	{
+		List<SharpMesh> LatticePoint = new List<SharpMesh>();
+
 		public LatticeForm(MMDModel model)
 		{
 			InitializeComponent( );
+
 			Lattice = new LatticeDef( model );
-			Lat.BindTo( Lat0 , x => x.Text , BindingMode.TwoWay ,
-				targetUpdateTrigger: ReactiveHelper.CreateEve( h=>Lat0.TextChanged += h , h=>Lat0.TextChanged -= h) );
+
+			var lats = new[]
+			{
+				Lat0,
+				Lat1,
+				Lat2,
+				Lat3,
+				Lat4,
+				Lat5,
+				Lat6,
+				Lat7,
+				Lat8,
+			};
+
+			for ( int i = 0 ; i < lats.Length ; i++ )
+			{
+#if true
+				Lattice.LatticeString[ i ].BindTo( lats[ i ] , x=>x.Text , BindingMode.TwoWay ,
+					targetUpdateTrigger: ReactiveHelper.TextBoxChanged( lats[ i ] ) );
+#endif
+			}
+			//Lat.BindTo( Lat0 , x => x.Text , BindingMode.TwoWay ,
+			//	targetUpdateTrigger: ReactiveHelper.CreateEve( h=>Lat0.TextChanged += h , h=>Lat0.TextChanged -= h) );
 			//Lat.BindTo( Lattice , x=>x.LatticeData[0] , BindingMode.TwoWay , targetUpdateTrigger:)
 		}
+
 		public void Update()
 		{
 			Lattice.FixedUpdate( );
+			foreach ( var point in LatticePoint )
+			{
+
+			}
+			//Lattice.LatticeData[ 1 ].Value = new TexturedVertex( Vector3.One , Vector3.One , Vector2.One );
 		}
-		public ReactiveProperty<TexturedVertex> Lat { get; } = new ReactiveProperty<TexturedVertex>();
+		//public List<ReactiveProperty<TexturedVertex>> Lat { get; } = new List<ReactiveProperty<TexturedVertex>>();
 		LatticeDef Lattice;
 	}
 }
