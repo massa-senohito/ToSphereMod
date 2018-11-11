@@ -266,7 +266,12 @@ namespace SharpDXTest
 			{
 				Vertice[ i ].Position = castedVertice[ i ];
 			}
-			Mesh.SetOnly( Vertice , Index.ToArray( ) );
+			UpdateMesh( );
+		}
+
+		public void UpdateMesh()
+		{
+			Mesh?.SetOnly( Vertice , Index.ToArray( ) );
 		}
 
 		public void ToSphere( Vector3 pos , bool add = false )

@@ -527,7 +527,10 @@ namespace f3
 				normalAxis = 1;
 			}
 			// ray-hit with plane that contains translation axis
-			Vector3 planeHit = raycastFrame.RayPlaneIntersection( worldRay.From , worldRay.Dir , normalAxis ).Value;
+			var planeHitOpt = raycastFrame.RayPlaneIntersection( worldRay.From , worldRay.Dir , normalAxis );
+			if ( !planeHitOpt.HasValue )
+				return false;
+			Vector3 planeHit = planeHitOpt.Value;
 
 			// figure out new T-value along axis, then our translation update is delta-t
 			float fNewT = ClosestPointOnLineT( translateFrameW.Origin , translateAxisW , planeHit );
