@@ -130,5 +130,19 @@ namespace SharpDXTest
 				IsDirty = true;
 			}
 		}
+
+		public Vector3 Scale
+		{
+			get
+			{
+				return World.ScaleVector;
+			}
+			set
+			{
+				World.ScaleVector = value;
+				IsDirty = true;
+			}
+		}
+
 	}
 }

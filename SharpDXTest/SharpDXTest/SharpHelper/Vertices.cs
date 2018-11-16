@@ -10,7 +10,7 @@ namespace SharpHelper
     /// <summary>
     /// Textured Vertex
     /// </summary>
-    public struct TexturedVertex
+    public struct TexturedVertex :ICloneable
     {
         /// <summary>
         /// Position
@@ -45,6 +45,20 @@ namespace SharpHelper
 		{
 			var v3 = v.Split( ' ' ).Select(float.Parse).ToArray();
 			return new TexturedVertex( new Vector3( v3 ) , Vector3.Zero , Vector2.Zero );
+		}
+
+		public object Clone()
+		{
+			return new TexturedVertex(Position , Normal , TextureCoordinate);
+		}
+
+		public static TexturedVertex operator +( TexturedVertex v , TexturedVertex vv )
+		{
+			return new TexturedVertex( v.Position + vv.Position , v.Normal + vv.Normal , v.TextureCoordinate + vv.TextureCoordinate );
+		}
+		public static TexturedVertex operator -( TexturedVertex v , TexturedVertex vv )
+		{
+			return new TexturedVertex( v.Position - vv.Position , v.Normal - vv.Normal , v.TextureCoordinate - vv.TextureCoordinate );
 		}
 	}
 
