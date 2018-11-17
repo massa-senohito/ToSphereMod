@@ -14,7 +14,8 @@ using Reactive.Bindings.Extensions;
 using Matrix4x4 = SharpDX.Matrix;
 using Vertex = SharpHelper.TexturedVertex;
 using LatticeType = 
-	System.Collections.Generic.List<Reactive.Bindings.ReactiveProperty<SharpHelper.TexturedVertex>>;
+	//System.Collections.Generic.List<Reactive.Bindings.ReactiveProperty<SharpHelper.TexturedVertex>>;
+	Reactive.Bindings.ReactiveProperty<SharpHelper.TexturedVertex>;
 //System.Collections.Generic.List<SharpHelper.TexturedVertex>;
 
 public class LatticeDef
@@ -34,7 +35,8 @@ public class LatticeDef
 	Matrix4x4 latma;
 
 	//Matrix4x4 myself;
-	public LatticeType LatticeData = new LatticeType( );//ラティスの頂点座標
+	public LatticeType[] LatticeData;// = new LatticeType[];//ラティスの頂点座標
+	public LatticeType[] RelativeLattice;
 
 	public List<ReactiveProperty<string>> LatticeString = new List<ReactiveProperty<string>>( );
 
@@ -51,7 +53,6 @@ public class LatticeDef
 	void lattice_deform_vertsFull()
 	{
 		int len = verts.Length;
-		Vertex[] nverts = new Vertex[ len ];
 		verts.CopyTo( nverts , 0 );
 		for ( int i = 0 ; i < len ; i++ )
 		{
@@ -66,7 +67,7 @@ public class LatticeDef
 		//mesh.RecalculateNormals();
 	}
 
-	//頂点グループ以外done
+	//頂点グループ以外done 呼んでいない
 	void lattice_deform_verts( int count , int id )
 	{
 		//頂点グループは未対応
@@ -114,10 +115,10 @@ public class LatticeDef
 			//デフォーム配列に戻す
 			imat = latmat.Inverted();
 		}
+		//今のところここに入るパターンが無い
 		else
 		{
 			imat = latma.Inverted( );
-			//今のところここに入るパターンが無い
 			//latmat = imat * myself;
 			latmat = Matrix4x4.Identity;
 			//imat = latmat.inverse;
@@ -128,6 +129,7 @@ public class LatticeDef
 		var ffu = fu;
 		var ffv = fv;
 		var ffw = fw;
+		List<Vertex> vertices = new List<Vertex>( );
 		for ( int w = 0 ; w < UVW[ 2 ] ; w++, fw += dw )
 		{
 			for ( int v = 0 ; v < UVW[ 1 ] ; v++, fv += dv )
@@ -136,14 +138,24 @@ public class LatticeDef
 				  //bp++, co += 3, fp += 3, 
 				  fu += du )
 				{
-					//if()//coがあるなら,無いと仮定
+					//coはlattice座標 fpは初期fu,fv,fwで引かれて0になる
 					Vertex value = LatticeData[ id ].Value;
+
+#if true 
+					value.Position = ( mul_mat3_m4_v3( imat ,　value.Position ) );
+					vertices.Add( value );
+#else
 					Vector3 pos = value.Position - new Vector3( fu , fv , fw );
-					value.Position = ( pos );
 					//latmatをかけて行列を戻す
-					value.Position = ( mul_mat3_m4_v3( imat , value.Position ) );
+					value.Position = ( mul_mat3_m4_v3( imat ,　pos ) );
+					vertices.Add( value );
 					// ちゃんと変更
-					LatticeData[ id ].Value = value;
+					RelativeLattice[ id ] = new LatticeType(value);
+					// 常に相対になりたい
+					//                                                  0 0 0 -> -1 -1 -1
+					//RelativeLattice[ id ].ToReactivePropertyAsSynchronized( x => x.Value ,
+					//	convert :x => x + value ,convertBack: x => x - value );
+#endif
 					id++;
 				}
 				fu = ffu;
@@ -151,6 +163,12 @@ public class LatticeDef
 			fv = ffv;
 		}
 		fw = ffw;
+		RelativeLattice = LatticeData.Select(
+			( lat , i ) => lat.Select(
+			// x => x.Value , convert: 
+			x => LatticeData[i].Value - vertices[ i ]
+			//, convertBack: x => vertices[ i ] - LatticeData[i].Value)
+			).ToReactiveProperty()).ToArray();
 		latma = latmat;
 	}
 
@@ -173,7 +191,7 @@ public class LatticeDef
 		Start( model );
 		//LatticeData は BKE_lattice_resize, init_latt_deform で初期化されている
 	}
-
+		Vertex[] nverts;
 	void Start( MMDModel model )
 	{
 		mesh = model;//GetComponent<MeshFilter>().mesh;
@@ -181,6 +199,8 @@ public class LatticeDef
 		keytype = KEYType.KEY_BSPLINE;
 		overts = mesh.OrigVertice;
 		verts = mesh.Vertice;
+		int len = verts.Length;
+		nverts = new Vertex[ len ];
 		NotifyChanged( );
 		init_latt_deform( );
 		lattice_deform_vertsFull( );
@@ -394,7 +414,7 @@ public class LatticeDef
 								{
 									idx_u = idx_v;
 								}
-								int v1 = LatticeData.Count - idx_u - 1;
+								int v1 = LatticeData.Length - idx_u - 1;
 								var ldata = LatticeData[ v1 ];
 								Vector3 vector3 = ( ldata.Value.Position * u );
 
@@ -411,7 +431,7 @@ public class LatticeDef
 			}
 		}
 		// 異様にuが小さくなってしまう
-		co.Position = co.Position + co_pre.Position;
+		co.Position += co_pre.Position;
 		
 		//if (defgrp_index != -1)  //math_vector.c  weight_blendで線形補完
 		//  interp_v3_v3v3(co, co_prev, co, weight_blend);
@@ -497,6 +517,7 @@ public class LatticeDef
 				for ( int u = 0 ; u < uNew ; u++, coi++, uc += du )
 				{
 					var cv = new Vector3( uc , vc , wc );
+					// todo 同じかどうかよく調べる
 					co[ coi ].Position = ( cv );
 				}
 			}
@@ -529,14 +550,15 @@ public class LatticeDef
 			//lt->typew = typew;
 		}
 		alreadyCreate = true;
+		// pntsu
 		UVW[ 0 ] = uNew;
 		UVW[ 1 ] = vNew;
 		UVW[ 2 ] = wNew;
 		actbp = LT_ACTBP_NONE;
 		//bpの処理をしていないが、これでいいはず
 		LatticeString = co.Select( x => new ReactiveProperty<string>( x.ToString( ) ) ).ToList( );
-		LatticeData = LatticeString.Select( reactiveProperty ).ToList( );
-
+		LatticeData = LatticeString.Select( reactiveProperty ).ToArray( );
+		RelativeLattice = new LatticeType[ LatticeData.Length ];
 	}
 	ReactiveProperty<Vertex> reactiveProperty( ReactiveProperty<string> x )
 	{
@@ -563,7 +585,7 @@ public class LatticeDef
 		interp.SetValue(val, pow, bou, sca);
 #endif
 
-		for ( int id = 0 ; id < LatticeData.Count ; id++ )
+		for ( int id = 0 ; id < LatticeData.Length ; id++ )
 		{
 			var ld = LatticeData[ id ];
 			var pos = ld.Value.Position + mesh.Position;

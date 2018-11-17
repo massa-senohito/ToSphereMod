@@ -195,7 +195,9 @@ namespace SharpDXTest
 
 		public static void DebugWrite( this string s )
 		{
-			Debug.WriteLine( Platform.Program.FpsCounter.FrameCount + " " + s );
+			int frameCount = Platform.Program.FpsCounter.FrameCount;
+			//if(frameCount == 400)
+			Debug.WriteLine( frameCount + " " + s );
 		}
 
 		public static IEnumerable<Vector3> ParseCSV( IEnumerable<string> lines )
@@ -227,6 +229,17 @@ namespace SharpDXTest
 		public static int FirstIndex<T>( this List<T> items , System.Predicate<T> f )
 		{
 			var c = items.Count;
+			for ( int i = 0 ; i < c ; i++ )
+			{
+				if ( f( items[ i ] ) )
+					return i;
+			}
+			return -1;
+		}
+
+		public static int FirstIndex<T>( this T[] items , System.Predicate<T> f )
+		{
+			var c = items.Length;
 			for ( int i = 0 ; i < c ; i++ )
 			{
 				if ( f( items[ i ] ) )
