@@ -196,8 +196,10 @@ namespace SharpDXTest
 		public static void DebugWrite( this string s )
 		{
 			int frameCount = Platform.Program.FpsCounter.FrameCount;
-			//if(frameCount == 400)
+			//if ( frameCount == 500 )
+			{
 			Debug.WriteLine( frameCount + " " + s );
+			}
 		}
 
 		public static IEnumerable<Vector3> ParseCSV( IEnumerable<string> lines )
@@ -224,6 +226,28 @@ namespace SharpDXTest
 			{
 				yield return ParseFaceCSV( item );
 			}
+		}
+
+		public static Option<T> MinValue<T>( this IEnumerable<T> items , Func<T , float> sel )
+		{
+			float minValue = float.MaxValue;
+			T minItem = default(T);
+			bool hasValue = false;
+			foreach ( var item in items )
+			{
+				float val = sel( item );
+				if ( minValue > val )
+				{
+					minValue = val;
+					minItem = item;
+					hasValue = true;
+				}
+			}
+			if ( hasValue )
+			{
+				return Option.Return(minItem);
+			}
+			return Option.Return<T>( );
 		}
 
 		public static int FirstIndex<T>( this List<T> items , System.Predicate<T> f )
@@ -376,7 +400,10 @@ namespace SharpDXTest
 			return HitResult.Null;
 
 		}
-
+		public override string ToString()
+		{
+			return RayStr;
+		}
 	}
 
 	public class Face

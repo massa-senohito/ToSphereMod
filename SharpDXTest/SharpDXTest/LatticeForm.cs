@@ -30,7 +30,9 @@ namespace SharpDXTest
 			foreach ( var item in Lattice.LatticeData )
 			{
 				var pos = item.Value.Position;
-				LatticePoint.Add( ModelInWorld.Create( SharpMesh.CreateQuad( device , 0.1f , true) , pos.TransMat( ) , "../../HLSL.txt") );
+				ModelInWorld rectModel = ModelInWorld.Create( SharpMesh.CreateQuad( device , 0.1f , true ) , pos.TransMat( ) , "../../HLSL.txt" );
+				LatticePoint.Add( rectModel );
+				rectModel.SetFaceFromSharpMesh( "lattice" );
 			}
 
 			var lats = new[]
@@ -62,15 +64,37 @@ namespace SharpDXTest
 		{
 			Lattice.FixedUpdate( );
 
-			//foreach ( var point in LatticePoint )
 			for ( int i = 0 ; i < LatticePoint.Count ; i++ )
 			{
 				var point = LatticePoint[ i ];
-
 				point.Position = Lattice.LatticeData[ i ].Value.Position;
 				point.DrawAllSubSet( View , Projection );
 			}
-			//Lattice.LatticeData[ 1 ].Value = new TexturedVertex( Vector3.One , Vector3.One , Vector2.One );
+		}
+
+		public IEnumerable<string> AllLatticeString
+		{
+			get
+			{
+				foreach ( var item in LatticePoint)
+				{
+					foreach ( var str in item.AllTriString)
+					{
+						yield return str;
+					}
+				}
+			}
+		}
+
+		public IEnumerable<Vector3> HitPos( RayWrap ray )
+		{
+			foreach ( var point in LatticePoint )
+			{
+				foreach ( var hitResult in point.HitPos( ray ) )
+				{
+					yield return hitResult.HitPosition;
+				}
+			}
 		}
 
 		LatticeDef Lattice;

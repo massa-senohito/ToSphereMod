@@ -33,7 +33,7 @@ namespace BlenderModifier
 		{
 			Matrix objectMatrix = Matrix.Identity;
 			Matrix InverceObject = Matrix.Identity;
-			Matrix offsetPivot = Matrix.Translation( Offset );
+			Matrix offsetPivot = Rot * Matrix.Translation( Offset );
 
 			// 軸のオブジェクトを中心として使用するため必ず通す
 			//if (flag & MOD_CAST_USE_OB_TRANSFORM)
@@ -106,8 +106,8 @@ namespace BlenderModifier
 				nv.X *= Scale.X;
 				nv.Y *= Scale.Y;
 				nv.Z *= Scale.Z;
-
-				nv = Rot.TransByMat( nv ).ToV3( );
+				// 多分軸座標系で回転させれば
+				//nv = Rot.TransByMat( nv ).ToV3( );
 
 				tmpCo = nv * Len * Fac + tmpCo * facm;
 				{

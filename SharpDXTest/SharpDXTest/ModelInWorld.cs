@@ -33,6 +33,7 @@ namespace SharpDXTest
 	public class ModelInWorld
 	{
 		public Matrix World = Matrix.Identity;
+		public Face[] Faces;
 
 		public SharpMesh Mesh
 		{
@@ -56,6 +57,46 @@ namespace SharpDXTest
 			};
 			temp.PrepareShader( mesh.Device , shaderPath );
 			return temp;
+		}
+
+		public void SetFaceFromSharpMesh( string matName )
+		{
+			List<Face> faces = new List<Face>( );
+			for ( int i = 0 ; i < Mesh.Indices.Length ; i += 3 )
+			{
+				int ind1 = Mesh.Indices[ i ];
+				int ind2 = Mesh.Indices[ i + 1 ];
+				int ind3 = Mesh.Indices[ i + 2 ];
+				Face item1 = new Face( Mesh.Vertice[ ind1 ] , Mesh.Vertice[ ind2 ] , Mesh.Vertice[ ind3 ] , matName );
+				//Debug.WriteLine("first " + item1.TriString);
+				faces.Add( item1 );
+
+			}
+			Faces = faces.ToArray( );
+			UpdateFace( );
+		}
+
+		public IEnumerable<HitResult> HitPos( RayWrap ray )
+		{
+			foreach ( Face item in Faces )
+			{
+				HitResult res = ray.IntersectFace( item );
+				if ( res.IsHit )
+				{
+					yield return res;
+				}
+			}
+		}
+
+		public IEnumerable<string> AllTriString
+		{
+			get
+			{
+				foreach ( var item in Faces )
+				{
+					yield return item.TriString;
+				}
+			}
 		}
 
 		protected void PrepareShader( SharpDevice device , string shaderPath)
@@ -97,6 +138,37 @@ namespace SharpDXTest
 		}
 
 		protected bool IsDirty = false;
+
+		void OnDirty()
+		{
+			UpdateFace( );
+			// todo 今の所頂点座標を変更する必要がないのでいじってはいない
+			//for (int i = 0; i < Vertice.Length; i++)
+			//{
+			//  var item = Vertice[i];
+
+			//  item.Position = World.TransByMat(item.Position).ToV3();
+			//}
+		}
+
+		internal void UpdateFace()
+		{
+			foreach ( Face i in Faces )
+			{
+
+				i.Update( World );
+				//Util.DebugWrite(i.TriString);
+			}
+		}
+
+		public void TransUpdate()
+		{
+			if ( IsDirty )
+			{
+				OnDirty( );
+			}
+			IsDirty = false;
+		}
 
 		public Vector3 Position
 		{

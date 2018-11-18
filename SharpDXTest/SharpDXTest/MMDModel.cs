@@ -27,8 +27,6 @@ namespace SharpDXTest
 
 		public int[] Index;
 
-		public Face[] Faces;
-
 		public List<Material> Materials;
 
 		SphereCast Cast;
@@ -172,30 +170,11 @@ namespace SharpDXTest
 			}
 		}
 
-		void OnDirty()
-		{
-			foreach ( Face i in Faces )
-			{
 
-				i.Update( World );
-				//Util.DebugWrite(i.TriString);
-			}
-			// todo 今の所頂点座標を変更する必要がないのでいじってはいない
-			//for (int i = 0; i < Vertice.Length; i++)
-			//{
-			//  var item = Vertice[i];
-
-			//  item.Position = World.TransByMat(item.Position).ToV3();
-			//}
-		}
 
 		public void Update( SharpDevice device , Matrix View , Matrix Projection )
 		{
-			if ( IsDirty )
-			{
-				OnDirty( );
-			}
-			IsDirty = false;
+			TransUpdate( );
 
 			SendGPUData( device , View , Projection );
 
@@ -290,18 +269,6 @@ namespace SharpDXTest
 				{
 					yield return new MMDataIO.Pmx.PmxMorphVertexData( )
 						{ Index = ind , Position = curPos - origPos };
-				}
-			}
-		}
-
-		public IEnumerable<HitResult> HitPos( RayWrap ray )
-		{
-			foreach ( Face item in Faces )
-			{
-				HitResult res = ray.IntersectFace( item );
-				if ( res.IsHit )
-				{
-					yield return res;
 				}
 			}
 		}

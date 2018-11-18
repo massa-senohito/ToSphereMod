@@ -64,8 +64,8 @@ namespace Platform
 
 			device.Font.DrawString( "mouse: " + CameraRay.From , 0 , 30 );
 			device.Font.DrawString( "mouseto: " + CameraRay.To , 0 , 60 );
-			Debug.vdb_label( "model" );
-			Debug.Send( Axis.ModelStr );
+			//Debug.vdb_label( "model" );
+			//Debug.Send( Axis.ModelStr );
 			Debug.vdb_label( "ray" );
 			Debug.Send( CameraRay.RayStr );
 
@@ -80,6 +80,7 @@ namespace Platform
 #endif
 			}
 			Axis.OnClicked( Mouse , currentRay );
+			//Axis.Scale = new Vector3( 0.5f );
 			ModForm.SetOffset( Axis.Position );
 			ModForm.EulerRotate = Axis.Rotation.EulerAngle( );
 #if DEBUGLINE
@@ -87,6 +88,30 @@ namespace Platform
 			//Line.SetLine( Vector3.Zero , Axis.RotXFrame);
 			//line.SetLine(new Vector3(2,-12,-12), new Vector3(-8,8,10));
 #endif
+
+#if ENABLE_SPHERE
+			Model.ToSphere( Axis.World );
+			Model.ToSphere( Axis.World.InvX( ) , true );
+#else
+			LatticeForm.FixedUpdate( View , Projection );
+			currentRay.ToString( ).DebugWrite( );
+			IEnumerable<Vector3> hitPoss = LatticeForm.HitPos( currentRay );
+				Debug.vdb_label( "lattice" );
+			foreach ( var item in  LatticeForm.AllLatticeString)
+			{
+				//item.DebugWrite( );
+				Debug.Send( item );
+			}
+			
+			hitPoss.Count( ).ToString( ).DebugWrite( );
+			var nearestHitted = hitPoss.MinValue( pos =>( pos - Camera.Position).Length() );
+			//hitted.ToString( ).DebugWrite( );
+			if ( nearestHitted.HasValue )
+			{
+				Axis.Position = nearestHitted.Value;
+			}
+#endif
+
 #if FONT
 			//flush text to view
 			device.Font.End( );
@@ -260,13 +285,6 @@ namespace Platform
 
 #if DEBUGLINE
 			Line.Update(device, View , Projection);
-#endif
-
-#if ENABLE_SPHERE
-			Model.ToSphere( Axis.World );
-			Model.ToSphere( Axis.World.InvX( ) , true );
-#else
-			LatticeForm.FixedUpdate( View , Projection );
 #endif
 
 			PostViewUpdate( device );

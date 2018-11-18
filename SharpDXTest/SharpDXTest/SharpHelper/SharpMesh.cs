@@ -28,6 +28,18 @@ namespace SharpHelper
         /// </summary>
         public SharpDevice Device { get; private set; }
 
+		public Vector3[] Vertice
+		{
+			get;
+			private set;
+		}
+
+		public int[] Indices
+		{
+			get;
+			private set;
+		}
+
         /// <summary>
         /// Vertex Buffer
         /// </summary>
@@ -69,11 +81,13 @@ namespace SharpHelper
         /// </summary>
         public List<SharpSubSet> SubSets { get; private set; }
 
-        public SharpMesh(SharpDevice device)
-        {
-            Device = device;
-            SubSets = new List<SharpSubSet>();
-        }
+		public SharpMesh( SharpDevice device , Vector3[] vertice = null , int[] inds = null )
+		{
+			Device = device;
+			SubSets = new List<SharpSubSet>( );
+			Vertice = vertice;
+			Indices = inds;
+		}
 
 
         /// <summary>
@@ -250,7 +264,8 @@ namespace SharpHelper
 			int[] indices = IsDoubleSide
 				? new int[] { 0 , 2 , 1 , 2 , 3 , 1 , 1 , 2 , 0 , 3 , 2 , 1 }
 				: new int[] { 0, 2, 1, 2, 3, 1 };
-            SharpMesh mesh = new SharpMesh(device);
+
+			SharpMesh mesh = new SharpMesh( device , vertices , indices );
             mesh.VertexBuffer = Buffer11.Create<Vector3>(device.Device, BindFlags.VertexBuffer, vertices.ToArray());
             mesh.IndexBuffer = Buffer11.Create(device.Device, BindFlags.IndexBuffer, indices.ToArray());
             mesh.VertexSize = SharpDX.Utilities.SizeOf<Vector3>();
