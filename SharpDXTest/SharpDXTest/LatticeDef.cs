@@ -163,6 +163,7 @@ public class LatticeDef
 			fv = ffv;
 		}
 		fw = ffw;
+
 		RelativeLattice = LatticeData.Select(
 			( lat , i ) => lat.Select(
 			// x => x.Value , convert: 
@@ -473,7 +474,7 @@ public class LatticeDef
 				wNew--;
 		}
 
-		var vertexCos = new TexturedVertex[ uNew * vNew * wNew ];//tmp_vcos
+		var vertexCos = new Vertex[ uNew * vNew * wNew ];//tmp_vcos
 		var fudu = calc_lat_fudu( gridFlag , uNew );
 		var fvdv = calc_lat_fudu( gridFlag , vNew );
 		var fwdw = calc_lat_fudu( gridFlag , wNew );
@@ -516,7 +517,7 @@ public class LatticeDef
 				uc = fu;
 				for ( int u = 0 ; u < uNew ; u++, coi++, uc += du )
 				{
-					var cv = new Vector3( uc , vc , wc );
+					var cv = new Vector3( - uc , - vc , - wc );
 					// todo 同じかどうかよく調べる
 					co[ coi ].Position = ( cv );
 				}

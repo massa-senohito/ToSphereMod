@@ -20,19 +20,27 @@ namespace SharpDXTest
 	public partial class LatticeForm : Form
 	{
 		List<ModelInWorld> LatticePoint = new List<ModelInWorld>();
+		DraggableAxis LatticePointControl;
+		Option<int> HandlingIndex = Option.Return<int>();
+		TrackBallCamera Camera;
+		SharpDevice Device;
 
-		public LatticeForm(MMDModel model, SharpDevice device)
+		public LatticeForm(MMDModel model, SharpDevice device , TrackBallCamera camera)
 		{
 			InitializeComponent( );
 
+			Camera = camera;
 			Lattice = new LatticeDef( model );
 
-			foreach ( var item in Lattice.LatticeData )
+			//foreach ( var item in Lattice.LatticeData )
+			for ( int i = 0 ; i < Lattice.LatticeData.Length ; i++ )
 			{
+				var item = Lattice.LatticeData[ i ];
 				var pos = item.Value.Position;
-				ModelInWorld rectModel = ModelInWorld.Create( SharpMesh.CreateQuad( device , 0.1f , true ) , pos.TransMat( ) , "../../HLSL.txt" );
+				SharpMesh mesh = SharpMesh.CreateQuad( device , 0.1f , true );
+				ModelInWorld rectModel = ModelInWorld.Create( mesh , pos.TransMat( ) , "../../HLSL.txt" );
 				LatticePoint.Add( rectModel );
-				rectModel.SetFaceFromSharpMesh( "lattice" );
+				rectModel.SetFaceFromSharpMesh( "lattice" + i );
 			}
 
 			var lats = new[]
@@ -55,15 +63,22 @@ namespace SharpDXTest
 					targetUpdateTrigger: ReactiveHelper.TextBoxChanged( lats[ i ] ) );
 #endif
 			}
-			//Lat.BindTo( Lat0 , x => x.Text , BindingMode.TwoWay ,
-			//	targetUpdateTrigger: ReactiveHelper.CreateEve( h=>Lat0.TextChanged += h , h=>Lat0.TextChanged -= h) );
-			//Lat.BindTo( Lattice , x=>x.LatticeData[0] , BindingMode.TwoWay , targetUpdateTrigger:)
+
+			LatticePointControl = new DraggableAxis( "axis/axisold.csv" );
 		}
+
+		internal void LoadTexture( SharpDevice device )
+		{
+			Device = device;
+			LatticePointControl.LoadTexture( device );
+			LatticePointControl.Scale = new Vector3( 0.2f );
+		}
+
 
 		public void FixedUpdate( Matrix View , Matrix Projection )
 		{
 			Lattice.FixedUpdate( );
-
+			LatticePointControl.Update( Device , View , Projection );
 			for ( int i = 0 ; i < LatticePoint.Count ; i++ )
 			{
 				var point = LatticePoint[ i ];
@@ -86,17 +101,82 @@ namespace SharpDXTest
 			}
 		}
 
-		public IEnumerable<Vector3> HitPos( RayWrap ray )
+		public void OnClicked( Mouse mouse , RayWrap ray )
+		{
+			if ( mouse.Clicked )
+			{
+				var hitPoss = HitPos( ray );
+				var nearestHitted = hitPoss.MinValue( pos =>( pos.HitPosition - Camera.Position).Length() );
+				//hitted.ToString( ).DebugWrite( );
+				// ドラッグしてるとき別のにフォーカス取られるのを避ける
+				if ( nearestHitted.HasValue && !LatticePointControl.IsDragging)
+				{
+					HitResult value = nearestHitted.Value;
+					LatticePointControl.Position = value.HitPosition;
+					// Lattice の文字分消す
+					var index = value.Info.Remove( 0 , 7 ).Int();
+					HandlingIndex = new Some<int>(index);
+					//Lattice.LatticeData[index].Value
+				}
+			}
+
+			if ( HandlingIndex.HasValue )
+			{
+				LatticePointControl.OnClicked( mouse , ray );
+				Lattice.LatticeData[ HandlingIndex.Value ].Value = new TexturedVertex( LatticePointControl.Position);
+			}
+		}
+
+		IEnumerable<HitResult> HitPos( RayWrap ray )
 		{
 			foreach ( var point in LatticePoint )
 			{
 				foreach ( var hitResult in point.HitPos( ray ) )
 				{
-					yield return hitResult.HitPosition;
+					yield return hitResult;
 				}
 			}
 		}
 
 		LatticeDef Lattice;
+
+		#region IDisposable Support
+		private bool disposedValue = false; // 重複する呼び出しを検出するには
+
+		protected virtual void ResourceDispose( bool disposing )
+		{
+			if ( !disposedValue )
+			{
+				if ( disposing )
+				{
+					foreach ( var item in LatticePoint )
+					{
+						item.Dispose( );
+					}
+					LatticePointControl.Dispose( );
+				}
+
+				// TODO: アンマネージ リソース (アンマネージ オブジェクト) を解放し、下のファイナライザーをオーバーライドします。
+				// TODO: 大きなフィールドを null に設定します。
+
+				disposedValue = true;
+			}
+		}
+
+		// TODO: 上の Dispose(bool disposing) にアンマネージ リソースを解放するコードが含まれる場合にのみ、ファイナライザーをオーバーライドします。
+		// ~MMDModel() {
+		//   // このコードを変更しないでください。クリーンアップ コードを上の Dispose(bool disposing) に記述します。
+		//   Dispose(false);
+		// }
+
+		// このコードは、破棄可能なパターンを正しく実装できるように追加されました。
+		public void ResourceDispose()
+		{
+			// このコードを変更しないでください。クリーンアップ コードを上の Dispose(bool disposing) に記述します。
+			ResourceDispose( true );
+			// TODO: 上のファイナライザーがオーバーライドされる場合は、次の行のコメントを解除してください。
+			// GC.SuppressFinalize(this);
+		}
+		#endregion
 	}
 }

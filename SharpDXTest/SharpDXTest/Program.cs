@@ -2,7 +2,7 @@
 //#define CUBEMAP
 //#define MODELCLK
 //#define DEBUGLINE
-#define ENABLE_SPHERE
+//#define ENABLE_SPHERE
 #define FONT
 
 using System;
@@ -56,7 +56,6 @@ namespace Platform
 			RayWrap currentRay = new RayWrap( Ray.GetPickRay( ( int )Mouse.Position.X , ( int )Mouse.Position.Y , Viewport , View * Projection ) );
 #if FONT
 			// 最小化したときフォントがなくなることがあった
-			//begin drawing text
 			device.Font.Begin( );
 
 			//draw string
@@ -94,22 +93,14 @@ namespace Platform
 			Model.ToSphere( Axis.World.InvX( ) , true );
 #else
 			LatticeForm.FixedUpdate( View , Projection );
-			currentRay.ToString( ).DebugWrite( );
-			IEnumerable<Vector3> hitPoss = LatticeForm.HitPos( currentRay );
-				Debug.vdb_label( "lattice" );
+			Debug.vdb_label( "lattice" );
 			foreach ( var item in  LatticeForm.AllLatticeString)
 			{
 				//item.DebugWrite( );
 				Debug.Send( item );
 			}
-			
-			hitPoss.Count( ).ToString( ).DebugWrite( );
-			var nearestHitted = hitPoss.MinValue( pos =>( pos - Camera.Position).Length() );
-			//hitted.ToString( ).DebugWrite( );
-			if ( nearestHitted.HasValue )
-			{
-				Axis.Position = nearestHitted.Value;
-			}
+
+			LatticeForm.OnClicked( Mouse , currentRay );
 #endif
 
 #if FONT
@@ -150,11 +141,12 @@ namespace Platform
 
 			using ( SharpDevice device = new SharpDevice( Form ) )
 			{
-				LatticeForm = new LatticeForm( Model , device);
+				LatticeForm = new LatticeForm( Model , device , Camera);
 				LatticeForm.Show( );
 
 				Model.LoadTexture( device );
 				Axis.LoadTexture( device );
+				LatticeForm.LoadTexture( device );
 #if DEBUGLINE
 				Line.LoadTexture(device);
 				Line.AfterLoaded();

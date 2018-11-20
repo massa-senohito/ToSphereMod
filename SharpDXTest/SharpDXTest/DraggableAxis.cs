@@ -95,6 +95,13 @@ namespace SharpDXTest
 	{
 
 		ClickState state;
+		public bool IsDragging
+		{
+			get
+			{
+				return state.IsDragging;
+			}
+		}
 
 		public DraggableAxis( string path ) : base( path )
 		{
