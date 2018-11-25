@@ -14,6 +14,7 @@ using Reactive.Bindings.Extensions;
 using SharpDX;
 using SharpHelper;
 using SharpDXTest;
+using Platform;
 
 namespace SharpDXTest
 {
@@ -22,14 +23,12 @@ namespace SharpDXTest
 		List<ModelInWorld> LatticePoint = new List<ModelInWorld>();
 		DraggableAxis LatticePointControl;
 		Option<int> HandlingIndex = Option.Return<int>();
-		TrackBallCamera Camera;
 		SharpDevice Device;
 
-		public LatticeForm(MMDModel model, SharpDevice device , TrackBallCamera camera)
+		public LatticeForm(MMDModel model, SharpDevice device )
 		{
 			InitializeComponent( );
 
-			Camera = camera;
 			Lattice = new LatticeDef( model );
 
 			//foreach ( var item in Lattice.LatticeData )
@@ -103,10 +102,11 @@ namespace SharpDXTest
 
 		public void OnClicked( Mouse mouse , RayWrap ray )
 		{
-			if ( mouse.Clicked )
+			var camera = Program.Camera;
+			if ( mouse.RightClicked )
 			{
 				var hitPoss = HitPos( ray );
-				var nearestHitted = hitPoss.MinValue( pos =>( pos.HitPosition - Camera.Position).Length() );
+				var nearestHitted = hitPoss.MinValue( pos =>( pos.HitPosition - camera.Position).Length() );
 				//hitted.ToString( ).DebugWrite( );
 				// ドラッグしてるとき別のにフォーカス取られるのを避ける
 				if ( nearestHitted.HasValue && !LatticePointControl.IsDragging)

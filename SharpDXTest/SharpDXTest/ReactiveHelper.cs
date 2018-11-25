@@ -29,5 +29,13 @@ namespace SharpDXTest
 				h => textBox.TextChanged -= h )
 				.ToUnit( );
 		}
+		public static IObservable<Unit> BarChanged( TrackBar trackBar )
+		{
+			return Observable.FromEvent<EventHandler , EventArgs>(
+				h => ( s , e ) => h( e ) ,
+				h => trackBar.ValueChanged += h ,
+				h => trackBar.ValueChanged -= h )
+				.ToUnit( );
+		}
 	}
 }

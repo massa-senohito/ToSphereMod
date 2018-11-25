@@ -9,6 +9,52 @@ using System.Threading.Tasks;
 
 namespace SharpDXTest
 {
+	public class VertexMorph
+	{
+		public string MorphName
+		{
+			get;
+			private set;
+		}
+
+		public string MorphNameE
+		{
+			get;
+			private set;
+		}
+
+		public MorphSlotType MorphSlot
+		{
+			get;
+			private set;
+		}
+
+		public List<PmxMorphVertexData> VertexMorphs
+		{
+			get;
+			private set;
+		}
+
+		public VertexMorph( PmxMorphData morph )
+		{
+			MorphName = morph.MorphName;
+			MorphNameE = morph.MorphNameE;
+			MorphSlot = morph.SlotType;
+			VertexMorphs = morph.MorphArray.Cast<PmxMorphVertexData>( ).ToList();
+		}
+
+		public static List<VertexMorph> LoadVertMorphs( PmxModelData modelData )
+		{
+			return modelData.MorphArray.Where( m => m.MorphType == MorphType.VERTEX )
+				.Select( m => new VertexMorph( m ) ).ToList();
+		}
+
+		public override string ToString()
+		{
+			return MorphName;
+		}
+	}
+
 	class PMXLoader
 	{
 		static IEnumerable<int> IndexRange( PmxModelData model )
@@ -135,6 +181,7 @@ namespace SharpDXTest
 					IEnumerable<Material> mats = GetMat( PmxModelData );
 					string parent = Directory.GetParent( path ).FullName;
 					MMDModel = new MMDModel( vert , mats , parent );
+					MMDModel.SetMorph( VertexMorph.LoadVertMorphs( PmxModelData ) );
 				}
 			}
 		}

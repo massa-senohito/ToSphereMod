@@ -1,4 +1,5 @@
 ﻿using BlenderModifier;
+using Reactive.Bindings;
 using SharpDX;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
@@ -29,6 +30,24 @@ namespace SharpDXTest
 
 		public List<Material> Materials;
 
+		ModelMorph MMDModelMorph = new ModelMorph();
+		public void BindMorphProp( List<ReactiveProperty<int>> reactives )
+		{
+			MMDModelMorph.Bind( reactives );
+		}
+
+		public List<VertexMorph> Morphs
+		{
+			get
+			{
+				return MMDModelMorph.Morphs;
+			}
+		}
+
+		internal void SetMorph( List<VertexMorph> list )
+		{
+			MMDModelMorph.SetMorph( list );
+		}
 		SphereCast Cast;
 
 		public string DirPath
@@ -176,6 +195,10 @@ namespace SharpDXTest
 
 			SendGPUData( device , View , Projection );
 
+			MMDModelMorph.UpdateMorph( OrigVertice , Vertice );
+
+			UpdateMesh( );
+
 			Mesh.Begin( );
 			for ( int i = 0 ; i < Mesh.SubSets.Count ; i++ )
 			{
@@ -234,15 +257,42 @@ namespace SharpDXTest
 			Cast.Rot = rot.RotMat();
 			// ミラーの場合、元のモデルに対して変更を行うと上書きになってしまう
 			// 順序が生まれてしまうが、変更後に対して作用させる
+			// 指定材質以外影響を受けないようにしたい
+			List<SharpSubSet> subSets = Mesh.SubSets;
+#if false
+			for ( int subInd = 0 ; subInd < subSets.Count; subInd++ )
+			{
+				//int subInd = 14;
+				int startInd = subSets[ subInd ].StartIndex / 3;
+				int count = subSets[ subInd ].IndexCount;
+
+				// それぞれ面のインデックス
+				var indice = Index.Range( startInd , count ).Distinct( );
+
+				var originalVertPos = add ?
+					Vertice    .TakeIndice(indice).Select( v => v.Position ).ToArray( ) :
+					OrigVertice.TakeIndice(indice).Select( v => v.Position ).ToArray( );
+
+				Vector3[] castedVertice = Cast.GetSphereUntilEnd( originalVertPos );
+				var indiceA = indice.ToArray( );
+				for ( int i = 0 ; i < indiceA.Length ; i++ )
+				//foreach ( var i in indice )
+				{
+
+					Vertice[ indiceA[i] ].Position = castedVertice[ i ];
+				}
+			}
+#else
 			var originalVertPos = add ?
 				Vertice    .Select( v => v.Position ).ToArray( ) :
 				OrigVertice.Select( v => v.Position ).ToArray( );
 
-			Vector3[] castedVertice = Cast.GetSpereUntilEnd( originalVertPos );
+			Vector3[] castedVertice = Cast.GetSphereUntilEnd( originalVertPos );
 			for ( int i = 0 ; i < castedVertice.Length ; i++ )
 			{
 				Vertice[ i ].Position = castedVertice[ i ];
 			}
+#endif
 			UpdateMesh( );
 		}
 

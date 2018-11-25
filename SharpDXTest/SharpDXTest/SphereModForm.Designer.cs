@@ -234,10 +234,6 @@
 			this.YScale.TabIndex = 18;
 			this.YScale.Text = "1";
 			// 
-			// modFormModelBindingSource
-			// 
-			this.modFormModelBindingSource.DataSource = typeof(SharpDXTest.ModFormModel);
-			// 
 			// YRot
 			// 
 			this.YRot.Location = new System.Drawing.Point(191, 353);

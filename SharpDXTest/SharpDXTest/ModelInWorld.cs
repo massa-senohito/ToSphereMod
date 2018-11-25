@@ -48,6 +48,13 @@ namespace SharpDXTest
 		protected Buffer GPUDataBuffer;
 		protected GPUData GpuData;
 
+		protected Option<TrackBallCamera> Camera;
+
+		public void SetCamera( TrackBallCamera camera )
+		{
+			Camera = Option.Return<TrackBallCamera>( camera );
+		}
+
 		public static ModelInWorld Create( SharpMesh mesh , Matrix world , string shaderPath)
 		{
 			var temp = new ModelInWorld( )

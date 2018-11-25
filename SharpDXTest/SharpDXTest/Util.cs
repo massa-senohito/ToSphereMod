@@ -250,6 +250,20 @@ namespace SharpDXTest
 			return Option.Return<T>( );
 		}
 
+		public static IEnumerable<T> Range<T>( this IEnumerable<T> ts , int start , int count )
+		{
+			return ts.Skip( start ).Take( count );
+		}
+
+		public static IEnumerable<T> TakeIndice<T>( this T[] items , IEnumerable<int> indice )
+		{
+			foreach ( var item in indice )
+			{
+				yield return items[ item ];
+
+			}
+		}
+
 		public static int FirstIndex<T>( this List<T> items , System.Predicate<T> f )
 		{
 			var c = items.Count;

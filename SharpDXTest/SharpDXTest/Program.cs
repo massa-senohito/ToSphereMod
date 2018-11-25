@@ -2,7 +2,7 @@
 //#define CUBEMAP
 //#define MODELCLK
 //#define DEBUGLINE
-//#define ENABLE_SPHERE
+#define ENABLE_SPHERE
 #define FONT
 
 using System;
@@ -41,6 +41,7 @@ namespace Platform
 		static RenderForm Form;
 		static BlenderModifier.SphereModForm ModForm = new BlenderModifier.SphereModForm( );
 		static LatticeForm LatticeForm;
+		static VertMorphViewer MorphViewer;
 
 		static void OnResizeForm( float ratio , SharpDevice device )
 		{
@@ -141,7 +142,7 @@ namespace Platform
 
 			using ( SharpDevice device = new SharpDevice( Form ) )
 			{
-				LatticeForm = new LatticeForm( Model , device , Camera);
+				LatticeForm = new LatticeForm( Model , device );
 				LatticeForm.Show( );
 
 				Model.LoadTexture( device );
@@ -213,7 +214,9 @@ namespace Platform
 				//PMXLoader.WriteTestCSV( V );
 				LoadedFromDialog = new PMXLoader( V );
 				Model = LoadedFromDialog.MMDModel;
-
+				MorphViewer = new VertMorphViewer( Model.Morphs );
+				Model.BindMorphProp( MorphViewer.BarValues );
+				MorphViewer.Show( );
 				NormalStart( );
 			}
 

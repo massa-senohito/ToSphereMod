@@ -66,7 +66,7 @@ namespace BlenderModifier
 			//Pivot = pivot;
 		}
 
-		public V3[] GetSpereUntilEnd( V3[] ovs )
+		public V3[] GetSphereUntilEnd( V3[] ovs )
 		{
 			SphereVertice = ovs;
 			StartDeform( ovs );

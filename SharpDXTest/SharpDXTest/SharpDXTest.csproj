@@ -99,6 +99,12 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BarControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="BarControl.Designer.cs">
+      <DependentUpon>BarControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="CoordUtil.cs" />
     <Compile Include="DebugLine.cs" />
     <Compile Include="DraggableAxis.cs" />
@@ -114,6 +120,7 @@
     <Compile Include="Material.cs" />
     <Compile Include="MMDModel.cs" />
     <Compile Include="ModelInWorld.cs" />
+    <Compile Include="ModelMorph.cs" />
     <Compile Include="ModFormModel.cs" />
     <Compile Include="Option.cs" />
     <Compile Include="PMXLoader.cs" />
@@ -129,6 +136,12 @@
     </Compile>
     <Compile Include="TrackBallCamera.cs" />
     <Compile Include="Util.cs" />
+    <Compile Include="VertMorphViewer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="VertMorphViewer.Designer.cs">
+      <DependentUpon>VertMorphViewer.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -147,11 +160,17 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="BarControl.resx">
+      <DependentUpon>BarControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="LatticeForm.resx">
       <DependentUpon>LatticeForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SphereModForm.resx">
       <DependentUpon>SphereModForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="VertMorphViewer.resx">
+      <DependentUpon>VertMorphViewer.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
