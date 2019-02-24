@@ -39,7 +39,7 @@ namespace Platform
 
 		static Mouse Mouse = new Mouse( );
 		static RenderForm Form;
-		static BlenderModifier.SphereModForm ModForm = new BlenderModifier.SphereModForm( );
+        static BlenderModifier.SphereModForm ModForm;
 		static LatticeForm LatticeForm;
 		static VertMorphViewer MorphViewer;
 
@@ -183,6 +183,7 @@ namespace Platform
 
 		private static void Form_FormClosed( object sender , FormClosedEventArgs e )
 		{
+            ModForm.Save( );
 			var morphs = Model.DifferVert( );
 			//morphs.Select(x=>x.ToString()).WriteFile("MorphSentaiMiku.txt");
 			// 枠が不正になる
@@ -217,6 +218,7 @@ namespace Platform
 				MorphViewer = new VertMorphViewer( Model.Morphs );
 				Model.BindMorphProp( MorphViewer.BarValues );
 				MorphViewer.Show( );
+                ModForm = new BlenderModifier.SphereModForm( LoadedFromDialog);
 				NormalStart( );
 			}
 

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,7 +23,9 @@ namespace BlenderModifier
 			private set;
 		}
 
-		public SphereModForm()
+        PMXLoader Loader;
+
+		public SphereModForm( PMXLoader loader)
 		{
 			InitializeComponent( );
 			FactorBox.Text = "0.3";
@@ -35,6 +38,7 @@ namespace BlenderModifier
 			const string PropertyName = nameof( MorphNameBox.Text );
 			Binding binding = new Binding( PropertyName , Model , "MorphName" );
 			MorphNameBox.DataBindings.Add(binding);
+            Loader = loader;
 			label4.Text = "";
 		}
 
@@ -108,6 +112,10 @@ namespace BlenderModifier
 			{
 				return MorphNameBox.Text;
 			}
+            private set
+            {
+                MorphNameBox.Text = value;
+            }
 		}
 
 		public void SetOffset( V3 v3 )
@@ -230,6 +238,48 @@ namespace BlenderModifier
 		{
 			OnUpdate?.Invoke( sender , e );
 		}
-	}
+
+        public void Save()
+        {
+            //fact
+            // rad
+            // name
+            // pos
+            // rot
+            // scale
+            var contain = new List<string>( )
+            {
+                FactorBox.Text,
+                RadiusBox.Text,
+                MorphName,
+                OffsetBox.Text,
+                EulerRotate.Csv(),
+                ToSphereScale.Csv(),
+            };
+            File.WriteAllLines( Path.Combine( Loader.FolderPath , MorphName + ".txt" ) , contain.ToArray( ) );
+        }
+
+        private void saveToolStripMenuItem_Click( object sender , EventArgs e )
+        {
+            Save( );
+        }
+
+        private void loadToolStripMenuItem_Click( object sender , EventArgs e )
+        {
+            OpenFileDialog dialog = new OpenFileDialog( );
+            dialog.Filter = "txt|*.txt";
+            if ( dialog.ShowDialog( ) == DialogResult.OK )
+            {
+                var lines = File.ReadAllLines( dialog.FileName );
+                Factor = lines[ 0 ].Float();
+                Radius = lines[ 1 ].Float( );
+                MorphName = lines[ 2 ];
+                SetOffset( lines[ 3 ].V3( ) );
+                EulerRotate = lines[ 4 ].V3( );
+                ToSphereScale = lines[ 5 ].V3( );
+            }
+
+        }
+    }
 }
 

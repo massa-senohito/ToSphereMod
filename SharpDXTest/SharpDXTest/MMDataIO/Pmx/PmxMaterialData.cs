@@ -148,7 +148,7 @@ namespace MMDataIO.Pmx
 
 		public override string ToString()
 		{
-			return $"name = {MaterialName} id = {TextureId}";
+			return $"name = {MaterialName} id = {TextureId} faces = {FaceCount}";
 		}
 	}
 

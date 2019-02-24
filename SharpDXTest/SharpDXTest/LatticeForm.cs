@@ -29,7 +29,7 @@ namespace SharpDXTest
 		{
 			InitializeComponent( );
 
-			Lattice = new LatticeDef( model );
+			Lattice = new LatticeDef( model , new int[] { 4,4,4} );
 
 			//foreach ( var item in Lattice.LatticeData )
 			for ( int i = 0 ; i < Lattice.LatticeData.Length ; i++ )

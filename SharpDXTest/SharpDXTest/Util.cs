@@ -193,6 +193,12 @@ namespace SharpDXTest
 			return int.Parse( s );
 		}
 
+        public static Vector3 V3( this string s )
+        {
+            var splitList = s.Split( ',' );
+            return new Vector3(splitList[0].Float() , splitList[1].Float(), splitList[2].Float());
+        }
+
 		public static void DebugWrite( this string s )
 		{
 			int frameCount = Platform.Program.FpsCounter.FrameCount;

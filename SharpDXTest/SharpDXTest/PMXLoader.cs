@@ -55,7 +55,7 @@ namespace SharpDXTest
 		}
 	}
 
-	class PMXLoader
+	public class PMXLoader
 	{
 		static IEnumerable<int> IndexRange( PmxModelData model )
 		{
@@ -166,7 +166,15 @@ namespace SharpDXTest
 
 		public PmxModelData PmxModelData;
 		public MMDModel MMDModel;
-		public string Path;
+		public string PmxModelPath;
+
+        public string FolderPath
+        {
+            get
+            {
+                return Directory.GetParent( PmxModelPath ).FullName;
+            }
+        }
 
 		public PMXLoader( string path )
 		{
@@ -175,7 +183,7 @@ namespace SharpDXTest
 				using ( BinaryReader bin = new BinaryReader( sr ) )
 				{
 					PmxModelData = new PmxModelData( bin );
-					Path = path;
+					PmxModelPath = path;
 					//PmxModelData.Write( path + "ex.pmx" );
 					var vert = PmxModelData.VertexArray.Select( GetVert ).ToArray();
 					IEnumerable<Material> mats = GetMat( PmxModelData );
@@ -193,7 +201,7 @@ namespace SharpDXTest
 
 		public void WriteUpdated()
 		{
-			PmxModelData.Write( Path + "ex.pmx" );
+			PmxModelData.Write( PmxModelPath + "ex.pmx" );
 		}
 
 		public static void WriteTestCSV( string arg )

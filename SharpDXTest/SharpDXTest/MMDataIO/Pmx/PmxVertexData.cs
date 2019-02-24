@@ -198,7 +198,11 @@ namespace MMDataIO.Pmx
 
             Edge = reader.ReadBoolean() ? 0 : 1;
         }
-    }
+		public override string ToString()
+		{
+			return Pos.ToString();
+		}
+	}
 
     public enum WeightType : byte
     {

@@ -43,6 +43,23 @@ namespace MMDataIO.Pmx
 
 		}
 
+        public void AddMorph( string morphName , IPmxMorphTypeData[] morphs )
+        {
+			var list = MorphArray.ToList( );
+			list.Add( new PmxMorphData( )
+			{
+				MorphName = morphName ,
+				MorphType = MorphType.UV,
+				SlotType = MorphSlotType.EYE ,
+				MorphArray = morphs
+			} );
+			MorphArray = list.ToArray( );
+			var slot = Array.Find( SlotArray,s => s.SlotName == "表情" );
+			var indList = slot.Indices.ToList( );
+			indList.Add( MorphArray.Length - 1 );
+			slot.Indices = indList.ToArray( );
+        }
+
 		public bool HasSameNameMorph( string name )
 		{
 			return MorphArray.Any( m => m.MorphName == name );

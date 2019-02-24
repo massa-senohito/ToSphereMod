@@ -52,7 +52,7 @@ namespace SharpDXTest
 
 		public void SetCamera( TrackBallCamera camera )
 		{
-			Camera = Option.Return<TrackBallCamera>( camera );
+			Camera = Option.Return( camera );
 		}
 
 		public static ModelInWorld Create( SharpMesh mesh , Matrix world , string shaderPath)
