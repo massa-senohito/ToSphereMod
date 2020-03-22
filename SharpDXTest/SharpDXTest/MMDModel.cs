@@ -306,6 +306,7 @@ namespace SharpDXTest
 			ToSphere( Matrix.Translation( pos ) , add);
 		}
 
+        // 差分頂点を抜き出し頂点モーフにする
 		public IEnumerable<MMDataIO.Pmx.PmxMorphVertexData> DifferVert()
 		{
 			for ( int i = 0 ; i < Vertice.Length ; i++ )

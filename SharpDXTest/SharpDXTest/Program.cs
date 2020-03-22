@@ -23,6 +23,7 @@ namespace Platform
 	{
 
 		public static MMDModel Model;
+		public static MMDModel RefModel;
 		static PMXLoader LoadedFromDialog;
 		static DraggableAxis Axis = new DraggableAxis( "axis/axis.csv" );
 		static DebugLine Line = new DebugLine( "line/line.csv" );
@@ -39,7 +40,7 @@ namespace Platform
 
 		static Mouse Mouse = new Mouse( );
 		static RenderForm Form;
-        static BlenderModifier.SphereModForm ModForm;
+		static BlenderModifier.SphereModForm ModForm;
 		static LatticeForm LatticeForm;
 		static VertMorphViewer MorphViewer;
 
@@ -142,12 +143,16 @@ namespace Platform
 
 			using ( SharpDevice device = new SharpDevice( Form ) )
 			{
+#if Lattice
 				LatticeForm = new LatticeForm( Model , device );
 				LatticeForm.Show( );
+#endif
 
 				Model.LoadTexture( device );
 				Axis.LoadTexture( device );
+#if Lattice
 				LatticeForm.LoadTexture( device );
+#endif
 #if DEBUGLINE
 				Line.LoadTexture(device);
 				Line.AfterLoaded();
@@ -164,6 +169,7 @@ namespace Platform
 				//release resource
 
 				Model.Dispose( );
+				RefModel?.Dispose( );
 				Axis.Dispose( );
 #if DEBUGLINE
 				Line.Dispose();
@@ -183,9 +189,8 @@ namespace Platform
 
 		private static void Form_FormClosed( object sender , FormClosedEventArgs e )
 		{
-            ModForm.Save( );
+			ModForm.Save( );
 			var morphs = Model.DifferVert( );
-			//morphs.Select(x=>x.ToString()).WriteFile("MorphSentaiMiku.txt");
 			// 枠が不正になる
 			LoadedFromDialog.PmxModelData.AddVertMorph( ModForm.MorphName , morphs );
 			if ( ModForm.MorphName == "" || ModForm.HasError )
@@ -218,11 +223,19 @@ namespace Platform
 				MorphViewer = new VertMorphViewer( Model.Morphs );
 				Model.BindMorphProp( MorphViewer.BarValues );
 				MorphViewer.Show( );
-                ModForm = new BlenderModifier.SphereModForm( LoadedFromDialog);
+				ModForm = new BlenderModifier.SphereModForm( LoadedFromDialog);
+                ModForm.OnLoadReferenceModel = OnLoadReferenceModel;
 				NormalStart( );
 			}
 
 		}
+        static void OnLoadReferenceModel( string path )
+        {
+            var refLoader = new PMXLoader(
+               path
+            );
+            RefModel = refLoader.MMDModel;
+        }
 
 		private static void Form_KeyUp( object sender , KeyEventArgs e )
 		{
@@ -231,6 +244,14 @@ namespace Platform
 
 		private static void OnUpdate( SharpDevice device )
 		{
+            // ここでしかdevice手に入らない、まだロードが完全でない
+            if ( RefModel != null )
+            {
+                if ( RefModel.Mesh == null )
+                {
+                    RefModel.LoadTexture( device );
+                }
+            }
 			//set transformation matrix
 			float ratio = ( float )Form.ClientRectangle.Width / Form.ClientRectangle.Height;
 			//90° degree with 1 ratio
@@ -278,6 +299,7 @@ namespace Platform
 
 			//apply shader
 			Model.Update( device , View , Projection );
+			RefModel?.Update( device , View , Projection );
 			Axis.Update( device , View , Projection );
 
 #if DEBUGLINE

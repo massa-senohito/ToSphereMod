@@ -55,6 +55,7 @@
             this.ZRot = new System.Windows.Forms.TextBox();
             this.XRot = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
+            this.LoadReferenceModel = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.FactorBar)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.RadiusBar)).BeginInit();
@@ -146,7 +147,8 @@
             // FactorBar
             // 
             this.FactorBar.Location = new System.Drawing.Point(65, 56);
-            this.FactorBar.Maximum = 100;
+            this.FactorBar.Maximum = 50;
+            this.FactorBar.Minimum = -50;
             this.FactorBar.Name = "FactorBar";
             this.FactorBar.Size = new System.Drawing.Size(104, 45);
             this.FactorBar.TabIndex = 8;
@@ -269,11 +271,22 @@
             this.label6.TabIndex = 19;
             this.label6.Text = "rot";
             // 
+            // LoadReferenceModel
+            // 
+            this.LoadReferenceModel.Location = new System.Drawing.Point(219, 29);
+            this.LoadReferenceModel.Name = "LoadReferenceModel";
+            this.LoadReferenceModel.Size = new System.Drawing.Size(143, 23);
+            this.LoadReferenceModel.TabIndex = 23;
+            this.LoadReferenceModel.Text = "リファレンスモデルをロード";
+            this.LoadReferenceModel.UseVisualStyleBackColor = true;
+            this.LoadReferenceModel.Click += new System.EventHandler(this.LoadReferenceModel_Click);
+            // 
             // SphereModForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(429, 424);
+            this.Controls.Add(this.LoadReferenceModel);
             this.Controls.Add(this.YRot);
             this.Controls.Add(this.ZRot);
             this.Controls.Add(this.XRot);
@@ -337,5 +350,6 @@
 		private System.Windows.Forms.TextBox ZRot;
 		private System.Windows.Forms.TextBox XRot;
 		private System.Windows.Forms.Label label6;
-	}
+        private System.Windows.Forms.Button LoadReferenceModel;
+    }
 }

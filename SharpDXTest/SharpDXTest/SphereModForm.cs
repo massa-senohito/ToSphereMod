@@ -280,6 +280,19 @@ namespace BlenderModifier
             }
 
         }
+
+        public Action<string> OnLoadReferenceModel;
+        private void LoadReferenceModel_Click( object sender , EventArgs e )
+        {
+
+			OpenFileDialog openFileDialog = new OpenFileDialog();
+			openFileDialog.Filter = "pmx|*.pmx";
+            if ( openFileDialog.ShowDialog( ) == DialogResult.OK )
+            {
+                string V = openFileDialog.FileName;
+                OnLoadReferenceModel?.Invoke( V );
+            }
+        }
     }
 }
 

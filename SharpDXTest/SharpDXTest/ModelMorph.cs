@@ -45,6 +45,8 @@ namespace SharpDXTest
 				foreach ( var item in currentMorph.VertexMorphs )
 				{
 					//morphs
+                    // todo ToSphereしないモデルはnullになる、ここでさせるより、モーフを呼ばない設定させるほうが良さそう
+                    if(MorphCoef != null)
 					verts[ item.Index ].Position += item.Position * MorphCoef[i].Value;
 					//verts[ item.Index ].Position = orig[item.Index].Position + item.Position * MorphCoef[i].Value;
 				}
